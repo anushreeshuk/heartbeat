@@ -1,6 +1,7 @@
 import React, { Component } from 'react'; //import React Component
 import './App.css';
-
+import like from './img/like.png';
+import skip from './img/skip.png';
 //Forms 
 import SignUpForm from './SignUp';
 import SignInForm from './SignIn';
@@ -9,6 +10,7 @@ import SignInForm from './SignIn';
 import firebase, { storage } from 'firebase/app';
 import { BrowserRouter, Route, Switch, Link, NavLink, Redirect } from 'react-router-dom';
 import { Button, Card, CardText, CardImg, CardSubtitle, CardBody, CardTitle, Modal, ModalHeader, ModalBody, ModalFooter, Input } from 'reactstrap';
+import { Container, Row, Col, ButtonGroup } from 'reactstrap';
 
 //Material UI Imports
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
@@ -50,7 +52,7 @@ class App extends Component {
         this.setState({ user: firebaseUser, loading: false });
       }
       else { //someone logged out 
-        this.setState({ user: null, loading: false });
+        this.setState({ user: null, userProfile: null, loading: false });
       }
 
     });
@@ -71,8 +73,20 @@ class App extends Component {
   // Make sure to turn off our listeners when the component is unmounting from the page
   componentWillUnmount() {
     this.authUnRegFunc();
-    this.messagesRef.off();
-    this.convoRef.off();
+    this.usersRef.off();
+    this.profileRef.off();
+  }
+
+  handleLike(uid, name) {
+
+    //Adding current user to liked user's list:
+    this.usersRef.child(uid).child("likes").push({ uid: this.state.user.uid, name: this.state.user.displayName })
+      .catch(err => console.log(err));;
+
+    //Adding liked user to current user's list:
+    this.usersRef.child(this.state.user.uid).child("likes").push({ uid: uid, name: name })
+      .catch(err => console.log(err));;
+
   }
 
   // A callback function for registering new users in the chat
@@ -125,17 +139,29 @@ class App extends Component {
     //       and be sure to set up open security rules
     //       https://info343.github.io/firebase.html#security-rules
     let newSong = {
-      "wrapperType": "artist",
-      "artistType": "Artist",
-      "artistName": "Drake",
-      "artistLinkUrl": "https://itunes.apple.com/us/artist/drake/271256?uo=4",
+      "wrapperType": "collection",
+      "collectionType": "Album",
       "artistId": 271256,
+      "collectionId": 1108737195,
       "amgArtistId": 905792,
-      "primaryGenreName": "Hip-Hop/Rap",
-      "primaryGenreId": 18
+      "artistName": "Drake",
+      "collectionName": "Views",
+      "collectionCensoredName": "Views",
+      "artistViewUrl": "https://itunes.apple.com/us/artist/drake/271256?uo=4",
+      "collectionViewUrl": "https://itunes.apple.com/us/album/views/1108737195?uo=4",
+      "artworkUrl60": "http://is2.mzstatic.com/image/thumb/Music60/v4/54/06/a3/5406a3ee-262c-b1d4-66be-9d333fe54bae/source/60x60bb.jpg",
+      "artworkUrl100": "http://is2.mzstatic.com/image/thumb/Music60/v4/54/06/a3/5406a3ee-262c-b1d4-66be-9d333fe54bae/source/100x100bb.jpg",
+      "collectionPrice": 13.99,
+      "collectionExplicitness": "explicit",
+      "contentAdvisoryRating": "Explicit",
+      "trackCount": 21,
+      "copyright": "℗ 2016 Young Money Entertainment/Cash Money Records",
+      "country": "USA",
+      "currency": "USD",
+      "releaseDate": "2016-04-29T07:00:00Z",
+      "primaryGenreName": "Hip-Hop/Rap"
     }
-
-    this.profileRef.child("artists").push(
+    this.profileRef.child("albums").push(
       newSong
     )
 
@@ -145,7 +171,6 @@ class App extends Component {
   toggleNav() {
     this.setState({ navOpen: !this.state.navOpen })
   }
-
 
   render() {
     let content = null; //content to render
@@ -195,13 +220,15 @@ class App extends Component {
         return <div className="hundred_height">
           <TopHeader
             className="mb-4"
-            title={"Welcome " + this.state.user.displayName + "!"}
+            title={this.state.user.displayName + "'s Matches"}
             toggleNavCallback={() => this.toggleNav()}
           />
-          <WelcomePage
+          <MatchPage
             users={this.state.users}
+            user={this.state.user}
             profile={this.state.userProfile}
-            signOutCallback={() => this.handleSignOut()} />
+            signOutCallback={() => this.handleSignOut()}
+            handleLikeCallback={(uid, name) => this.handleLike(uid, name)} />
         </div>
       } else {
         return <Redirect to='/login' />
@@ -239,7 +266,7 @@ class App extends Component {
       );
     } else {
       return (
-        <div>
+        <div className="hundred_height">
           {this.state.errorMessage &&
             <p className="alert alert-danger">{this.state.errorMessage}</p>
           }
@@ -250,11 +277,15 @@ class App extends Component {
   }
 }
 
+
 // A component to display a welcome message to the user upon signing in
-class WelcomePage extends Component {
+class MatchPage extends Component {
   constructor(props) {
     super(props);
-    this.state = { open: false };
+    this.state = {
+      open: false,
+    };
+
   }
 
   toggle() {
@@ -262,22 +293,222 @@ class WelcomePage extends Component {
   }
 
   render() {
+    let name = ""
+    let age = "";
+    let displayCollection = [];
+    let matchedProfiles = {};
+
+    //matchmaking:
+    if (this.props.users) {
+      if (this.props.profile) {
+        let profileArtistsIds = [];
+        let profileAlbumsIds = [];
+        let profileSongsIds = [];
+
+        //getting current user's artists
+        Object.keys(this.props.profile.artists).map((artistKey) => {
+          let artist = this.props.profile.artists[artistKey];
+          profileArtistsIds.push(artist.artistId);
+        });
+
+        //getting current user's albums
+        Object.keys(this.props.profile.albums).map((albumKey) => {
+          let album = this.props.profile.albums[albumKey];
+          profileAlbumsIds.push(album.collectionId);
+        });
+
+        //getting current user's songs
+        Object.keys(this.props.profile.songs).map((songKey) => {
+          let song = this.props.profile.songs[songKey];
+          profileSongsIds.push(song.trackId);
+        });
+
+        //find matches
+        Object.keys(this.props.users).map((userKey) => {
+          if (this.props.users[userKey].uid !== this.props.user.uid) {
+            let currentProfile = this.props.users[userKey];
+            let matchDetails = {
+              matchedArtistIds: [],
+              matchedAlbumIds: [],
+              matchedSongIds: [],
+              matchedArtists: [],
+              matchedAlbums: [],
+              matchedSongs: [],
+            };
+
+            //matching based on artists
+            Object.keys(currentProfile.artists).map((artistKey) => {
+              let artist = currentProfile.artists[artistKey];
+
+              if (profileArtistsIds.includes(artist.artistId)) {
+
+                if (!matchDetails.matchedArtistIds.includes(artist.artistId)) {
+                  matchDetails.matchedArtists.push(artist);
+                  matchDetails.matchedArtistIds.push(artist.artistId);
+                }
+
+              }
+
+            });
+
+            //matching based on albums
+            Object.keys(currentProfile.albums).map((albumKey) => {
+              let album = currentProfile.albums[albumKey];
+
+              if (profileAlbumsIds.includes(album.collectionId)) {
+
+                if (!matchDetails.matchedArtistIds.includes(album.collectionId)) {
+                  matchDetails.matchedAlbums.push(album);
+                  matchDetails.matchedAlbumIds.push(album.collectionId);
+                }
+
+              }
+
+            });
+
+            //matching based on songs
+            Object.keys(currentProfile.songs).map((songKey) => {
+              let song = currentProfile.songs[songKey];
+
+              if (profileSongsIds.includes(song.trackId)) {
+
+                if (!matchDetails.matchedSongIds.includes(song.trackId)) {
+                  matchDetails.matchedSongs.push(song);
+                  matchDetails.matchedSongIds.push(song.trackId);
+                }
+
+              }
+            });
+
+            //construct a match
+            let newMatchProfile = Object.assign({}, currentProfile, matchDetails);
+
+            //assign the match
+            matchedProfiles[currentProfile.uid] = newMatchProfile;
+            console.log(matchedProfiles);
+          }
+        });
+      }
+    }
+
+    let matchedCards = Object.keys(matchedProfiles).map((key) => {
+      return <MatchedCard
+        key={key}
+        profile={matchedProfiles[key]}
+        user={this.props.user}
+        handleLikeCallback={(uid, name) => this.props.handleLikeCallback(uid, name)} />
+    })
 
     return (
       <header className="container">
 
-        <Card>
-          <CardImg top width="100%" src="https://placeholdit.imgix.net/~text?txtsize=33&txt=318%C3%97180&w=318&h=180" alt="Card image cap" />
-          <CardBody>
-            <CardTitle>Card title</CardTitle>
-            <CardSubtitle>Card subtitle</CardSubtitle>
-            <CardText>Some quick example text to build on the card title and make up the bulk of the card's content.</CardText>
-            <Button>Button</Button>
-          </CardBody>
-        </Card>
+        {matchedCards}
 
       </header>
     );
+  }
+}
+
+class MatchedCard extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      open: false,
+      rSelected: "Albums",
+    };
+  }
+
+  onRadioBtnClick(rSelected) {
+    console.log(rSelected);
+    this.setState({ rSelected });
+  }
+
+  render() {
+
+    let name = ""
+    let age = "";
+    let displayCollection = [];
+
+    if (this.props.profile) {
+      if (this.props.profile.albums) {
+
+        name = this.props.profile.name;
+        age = this.props.profile.age;
+
+        if (this.state.rSelected === "Albums") {
+          displayCollection = Object.keys(this.props.profile.albums).map((albumKey) => {
+            let album = this.props.profile.albums[albumKey];
+            return <Card key={albumKey} className="music_card">
+              <CardImg top src={album.artworkUrl100} alt="Card image cap" />
+              <CardTitle>{album.collectionName}</CardTitle>
+              <CardSubtitle>{album.artistName}</CardSubtitle>
+            </Card>
+          });
+        }
+
+        if (this.state.rSelected === "Songs") {
+          displayCollection = Object.keys(this.props.profile.songs).map((songKey) => {
+            let song = this.props.profile.songs[songKey];
+            return <Card key={songKey} className="music_card">
+              <CardImg top src={song.artworkUrl100} alt="Card image cap" />
+              <CardTitle>{song.trackName}</CardTitle>
+              <CardSubtitle>{song.artistName}</CardSubtitle>
+            </Card>
+          });
+        }
+
+        if (this.state.rSelected === "Artists") {
+          displayCollection = Object.keys(this.props.profile.artists).map((artistKey) => {
+            let artist = this.props.profile.artists[artistKey];
+            return <Card key={artistKey} className="music_card">
+              <CardTitle>{artist.artistName}</CardTitle>
+              <CardSubtitle>{artist.primaryGenreName}</CardSubtitle>
+            </Card>
+          });
+        }
+      }
+    }
+
+    return (
+      <Card>
+        <div className="img_container">
+          <CardImg top className="person_img" src="https://images.pexels.com/photos/247917/pexels-photo-247917.jpeg?w=1260&h=750&dpr=2&auto=compress&cs=tinysrgb" alt="Card image cap" />
+        </div>
+        <CardBody>
+          <CardTitle>{name}</CardTitle>
+          <CardSubtitle>Age: {age}</CardSubtitle>
+          <div className="card_inner_content">
+            <ButtonGroup>
+              <Button color="primary" onClick={() => this.onRadioBtnClick("Artists")} active={this.state.rSelected === "Artists"}>Artists</Button>
+              <Button color="primary" onClick={() => this.onRadioBtnClick("Albums")} active={this.state.rSelected === "Albums"}>Albums</Button>
+              <Button color="primary" onClick={() => this.onRadioBtnClick("Songs")} active={this.state.rSelected === "Songs"}>Songs</Button>
+            </ButtonGroup>
+            <Container className="card_container">
+
+              <Row className="hundred_height" >
+                <Col xs="12">
+                  {this.state.rSelected + ":"}
+
+                  <div className="container-outer">
+                    <div className="container-inner">
+                      {displayCollection}
+                    </div>
+                  </div>
+
+                </Col>
+              </Row>
+            </Container>
+
+            <ButtonGroup className="action_buttons">
+              <Button color="link" onClick={() => console.log("clicked")}><img src={skip} /></Button>
+              <Button color="link" onClick={() => this.props.handleLikeCallback(this.props.profile.uid, this.props.profile.name)} ><img id="like" src={like} /></Button>
+            </ButtonGroup>
+          </div>
+        </CardBody>
+      </Card>
+
+    )
+
   }
 }
 
@@ -292,7 +523,7 @@ class TopHeader extends Component {
     return (
       <MuiThemeProvider>
         <AppBar
-          className="mb-4"
+          className="mb-2"
           title={this.props.title}
           onLeftIconButtonTouchTap={() => this.props.toggleNavCallback()}
         />
