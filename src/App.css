@@ -1,28 +1,35 @@
-.App {
-  text-align: center;
-}
-
-.App-logo {
-  animation: App-logo-spin infinite 20s linear;
-  height: 80px;
-}
-
-.App-header {
-  background-color: #222;
-  height: 150px;
-  padding: 20px;
-  color: white;
-}
-
-.App-title {
-  font-size: 1.5em;
-}
-
-.App-intro {
-  font-size: large;
-}
-
-@keyframes App-logo-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
+header.jumbotron {
+    background-color: #2A2280;
+    color: white;
+    text-align: center;
+  }
+  
+  header.jumbotron a, header.jumbotron a:hover {
+    color: white;
+    text-align: center;
+  }
+  
+  .nav {
+    margin-bottom: 2em; 
+    padding: 1em;  
+  }
+  
+  nav h2 {
+    font-size: 1.25rem;
+    text-align: center;
+  }
+  
+  .card-deck .card {
+    flex-basis: 200px;
+    margin-bottom: 30px;
+  }
+  
+  .activeLink {
+    background-color:#DEE2AE;
+    padding: .25em 1em;
+    border: 1px solid #ddd;
+  }
+  
+  footer {
+    text-align: center;
+  }
