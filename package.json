@@ -3,11 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-<<<<<<< HEAD
-    "react": "^16.2.0",
-    "react-dom": "^16.2.0",
-    "react-scripts": "1.0.17"
-=======
     "bootstrap": "^4.0.0-alpha.6",
     "firebase": "^4.7.0",
     "material-ui": "^0.19.4",
@@ -20,7 +15,6 @@
     "react-router-dom": "^4.2.2",
     "react-scripts": "1.0.17",
     "reactstrap": "^5.0.0-alpha.4"
->>>>>>> tej-development
   },
   "scripts": {
     "start": "react-scripts start",
@@ -28,8 +22,4 @@
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
   }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> tej-development
