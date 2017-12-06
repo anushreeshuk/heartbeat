@@ -1,6 +1,6 @@
-import React, { Component } from 'react'; 
+import React, { Component } from 'react';
 import { Collapse, Navbar, NavbarToggler, NavbarBrand, Nav, NavItem } from 'reactstrap';
-import SignUpForm from './SignUp'; 
+import SignUpForm from './SignUp';
 import firebase from 'firebase/app';
 import Join from './Join';
 import Login from './Login';
@@ -43,7 +43,7 @@ class App extends Component {
     let conversations = Object.keys(this.state.conversations).map(obj => this.state.conversations[obj]["id"] = obj);
     conversations = Object.keys(this.state.conversations).map(obj => this.state.conversations[obj]);
     if (!_.find(conversations, { 'name': 'general' })) {
-      console.log( conversations);
+      console.log(conversations);
       console.log(this.state.user);
     }
     return (
@@ -58,13 +58,13 @@ class App extends Component {
           <div className="row">
             <div className="col-xs">
               {this.state.user &&
-                <NavMenu conversations={conversations} />}
+                <NavMenu conversations={conversations} currentUser={this.state.user} />}
             </div>
             <div className="col-9">
               <div>
                 <Switch>
                   <Route exact path='/' render={(routerProps) => (
-                    <ConvoList {...routerProps} conversations={conversations} login={this.state.login} />
+                    <ConvoList {...routerProps} conversations={conversations} login={this.state.login} currentUser={this.state.user} />
                   )} />
                   <Route exact path='/conversations' render={(routerProps) => (
                     <ConvoList {...routerProps} conversations={conversations} login={this.state.login} />
@@ -79,7 +79,7 @@ class App extends Component {
                     <ChatRoom {...routerProps} user={this.state.user} conversations={conversations} />
                   )} />
                   <Route path='/add' render={(routerProps) => (
-                    <AddConvo {...routerProps} convoArray={conversations} user={this.state.user}/>
+                    <AddConvo {...routerProps} convoArray={conversations} user={this.state.user} />
                   )} />
                   <Redirect to="/" />
                 </Switch>
@@ -122,7 +122,9 @@ class NavMenu extends Component {
 
   render() {
     let navItems = this.props.conversations.map((conversation) => {
-      return <NavMenuItems conversation={conversation} key={conversation.name} />;
+      if (conversation.userId1 == this.props.currentUser.uid) {
+        return <NavMenuItems conversation={conversation} key={conversation.name} />;
+      }
     });
     return (
       <Navbar color="faded" light>

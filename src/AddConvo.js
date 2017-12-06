@@ -12,32 +12,47 @@ import _ from 'lodash';
 class AddConvo extends Component {
     constructor(props) {
         super(props);
-        this.state = { 'name': '', 'userId': '', 'username': '' };
+        this.state = { 'name': '', 'userId': '', 'username1': '', 'username2': '', 'userId2': '' };
     }
 
     handleCreate(event) {
         event.preventDefault(); //don't submit
         let name = this.state.name;
-        let userId = this.state.userId;
-        let username = this.state.username;
+        let userId1 = this.state.userId1;
+        let username1 = this.state.username1;
+        let username2 = this.state.username2;
+        let userId2 = this.state.userId2;
         let newConvo = {
             'name': name,
-            'userId': userId,
-            'username': username,
+            'userId1': userId1,
+            'username1': username1,
+            'username2': username2,
+            'userId2': userId2,
             'messages': 0
         };
         let conversations = firebase.database().ref('conversations');
-        if (!_.find(this.props.convoArray, { 'name': name })) {
+        if (!_.find(this.props.convoArray, {
+            'name': name, 'userId1': userId1,
+            'username1': username1,
+            'username2': username2,
+            'userId2': userId2,
+        })) {
             conversations.push(newConvo);
         }
-        this.setState({ 'name': '', 'userId': '', 'username': '', Redirect: true, prevName: name });
+        this.setState({
+            'name': '', 'userId1': '', 'username1': '', 'username2': '', 'userId2': '',
+            Redirect: true, prevName: name
+        });
     }
 
-    handleChange(event) {
+    handleChange(event, users) {
         let newState = {};
-        newState[event.target.name] = event.target.value;
-        newState['userId'] = this.props.user.uid;
-        newState['username'] = this.props.user.displayName;
+        newState[event.target.name] = this.props.user.displayName + '+' + event.target.value;
+        newState['userId1'] = this.props.user.uid;
+        newState['username1'] = this.props.user.displayName;
+        newState['username2'] = event.target.value;
+        newState['userId2'] = _.find(users, { 'username': event.target.value })
+            ? _.find(users, { 'username': event.target.value }).userId : '';
         this.setState(newState);
     }
 
@@ -46,9 +61,8 @@ class AddConvo extends Component {
             <Form inline>
                 <FormGroup className="mb-2 mr-sm-2 mb-sm-0">
                     <Label for="convoName" className="mr-sm-2">Name</Label>
-
-                    <Invite user={this.props.user} />
-
+                    <Invite user={this.props.user}
+                        handleChangeCallback={(e, users) => this.handleChange(e, users)} />
                 </FormGroup>
                 <Button color="primary" onClick={(e) => this.handleCreate(e)}>Create</Button>
                 {this.state.Redirect && <Redirect to={'/conversations/' + this.state.prevName} />}
@@ -80,11 +94,13 @@ class Invite extends Component {
         users = Object.keys(this.state.users).map(obj => this.state.users[obj]);
         let options = users.map((user) => {
             if (user.userId != this.props.user.uid) {
-                return <User invitedUser={user} key={user.username}/>
+                return <User invitedUser={user} key={user.username} />
             }
         })
         return (
-            <Input type="select" name="select" id="select" placeholder="other username" >
+            <Input type="select" name="name" id="select" placeholder="other username" onClick={(e) =>
+                this.props.handleChangeCallback(e, users)}>
+                <option>Choose</option>
                 {options}
             </Input>
         );

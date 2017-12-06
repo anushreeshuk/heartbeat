@@ -31,11 +31,42 @@ export class MessageBox extends Component {
     let messages = firebase.database().ref('messages/' + this.props.name);
     messages.push(newMessage);
     let id;
-    if (!_.find(this.props.conversations, {'name': this.props.name})) {
-      id = firebase.database().ref('conversations').push({ name: this.props.name, userId: this.props.currentUser.uid,
-         username: this.props.currentUser.displayName, messages: 0 }).key;
+    if (!_.find(this.props.conversations, { 'name': this.props.name, 'userId1': this.props.currentUser.uid })) {
+      id = firebase.database().ref('conversations').push({
+        name: this.props.name,
+        userId1: this.props.currentUser.uid,
+        username1: this.props.currentUser.displayName, username2: this.props.currentUser.displayName,
+        userId2: this.props.currentUser.uid, messages: 0
+      }).key;
     } else {
-      id = _.find(this.props.conversations, {'name': this.props.name}).id;
+      let convo = _.find(this.props.conversations, {
+        'name': this.props.name,
+        'userId1': this.props.currentUser.uid
+      });
+      firebase.database().ref('messages/' + convo.username2 + '+' + convo.username1).push(newMessage);
+      let id1;
+      if (_.find(this.props.conversations, {
+        'name': convo.username2 + '+' + convo.username1,
+        'userId2': this.props.currentUser.uid
+      })) {
+        id1 = _.find(this.props.conversations, {
+          'name': convo.username2 + '+' + convo.username1,
+          'userId2': this.props.currentUser.uid
+        }).id;
+      } else {
+        id1 = firebase.database().ref('conversations').push({
+          name: convo.username2 + '+' + convo.username1,
+          userId1: convo.userId2,
+          username1: convo.username2, username2: convo.username1,
+          userId2: this.props.currentUser.uid, messages: 0
+        }).key;
+      }
+      firebase.database().ref('conversations').once('value').then(function (snapshot) {
+        let y = snapshot.val()[id].messages;
+        let x = firebase.database().ref('conversations/' + id1);
+        x.update({ messages: y + 1 });
+      });;
+      id = convo.id;
     }
     firebase.database().ref('conversations').once('value').then(function (snapshot) {
       let y = snapshot.val()[id].messages;
@@ -53,7 +84,7 @@ export class MessageBox extends Component {
     return (
       <div className="container">
         <div className="row py-3 chirp-box">
-            <img src={photoURL} default="monsterid" className="avatar" />
+          <img src={photoURL} default="monsterid" className="avatar" />
           <div className="col pl-4 pl-lg-1">
             <form>
               <textarea name="text" className="form-control mb-2" placeholder="Type message here..."
