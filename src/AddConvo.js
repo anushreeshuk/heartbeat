@@ -47,6 +47,11 @@ class AddConvo extends Component {
 
     handleChange(event, users) {
         let newState = {};
+        if(event.target.value == "Choose"){
+            newState.valid = false;
+        } else {
+            newState.valid = true;
+        }
         newState[event.target.name] = this.props.user.displayName + '+' + event.target.value;
         newState['userId1'] = this.props.user.uid;
         newState['username1'] = this.props.user.displayName;
@@ -62,9 +67,9 @@ class AddConvo extends Component {
                 <FormGroup className="mb-2 mr-sm-2 mb-sm-0">
                     <Label for="convoName" className="mr-sm-2">Name</Label>
                     <Invite user={this.props.user}
-                        handleChangeCallback={(e, users) => this.handleChange(e, users)} />
+                        handleChangeCallback={(e, users) => this.handleChange(e, users)} valid={this.state.valid}/>
                 </FormGroup>
-                <Button color="primary" onClick={(e) => this.handleCreate(e)}>Create</Button>
+                <Button color="primary" onClick={(e) => this.handleCreate(e)} disabled={!this.state.valid}>Create</Button>
                 {this.state.Redirect && <Redirect to={'/conversations/' + this.state.prevName} />}
             </Form>
         );
@@ -99,8 +104,8 @@ class Invite extends Component {
         })
         return (
             <Input type="select" name="name" id="select" placeholder="other username" onClick={(e) =>
-                this.props.handleChangeCallback(e, users)}>
-                <option>Choose</option>
+                this.props.handleChangeCallback(e, users)} valid={this.props.valid}>
+                <option selected="true">Choose</option>
                 {options}
             </Input>
         );
