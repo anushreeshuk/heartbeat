@@ -10,14 +10,14 @@ import 'firebase/auth';
 import 'firebase/database';
 
 var config = {
-    apiKey: "AIzaSyBpUXCws_AIGorqlsfajBXcxNPe_cwdIfg",
-    authDomain: "chat-vinvsv97.firebaseapp.com",
-    databaseURL: "https://chat-vinvsv97.firebaseio.com",
-    projectId: "chat-vinvsv97",
-    storageBucket: "",
-    messagingSenderId: "899449637835"
-  };
-  firebase.initializeApp(config);
+  apiKey: "AIzaSyD1bOBAZIKzPNPDJtrQzQAWzxgT3mYS5O0",
+  authDomain: "heartbeat-vinvsv97.firebaseapp.com",
+  databaseURL: "https://heartbeat-vinvsv97.firebaseio.com",
+  projectId: "heartbeat-vinvsv97",
+  storageBucket: "",
+  messagingSenderId: "776533069576"
+};
+firebase.initializeApp(config);
 
 ReactDOM.render(<BrowserRouter basename={process.env.PUBLIC_URL+'/'}><App /></BrowserRouter>, document.getElementById('root'));
 registerServiceWorker();

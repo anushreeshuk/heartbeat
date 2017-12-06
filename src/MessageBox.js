@@ -31,10 +31,11 @@ export class MessageBox extends Component {
     let messages = firebase.database().ref('messages/' + this.props.name);
     messages.push(newMessage);
     let id;
-    if (!_.find(this.props.conversations, { 'name': this.props.name})) {
-      id = firebase.database().ref('conversations').push({ name: this.props.name, messages: 0 }).key;
+    if (!_.find(this.props.conversations, {'name': this.props.name})) {
+      id = firebase.database().ref('conversations').push({ name: this.props.name, userId: this.props.currentUser.uid,
+         username: this.props.currentUser.displayName, messages: 0 }).key;
     } else {
-      id = _.find(this.props.conversations, { 'name': this.props.name }).id;
+      id = _.find(this.props.conversations, {'name': this.props.name}).id;
     }
     firebase.database().ref('conversations').once('value').then(function (snapshot) {
       let y = snapshot.val()[id].messages;

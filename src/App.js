@@ -29,6 +29,7 @@ class App extends Component {
     this.conversationsRef = firebase.database().ref('conversations'); ///finds existing conversations
     this.conversationsRef.on('value', (snapshot) => {
       if (snapshot.val() != null) {
+        console.log(snapshot.val());
         this.setState({ conversations: snapshot.val() });
       }
     });
@@ -43,6 +44,7 @@ class App extends Component {
     conversations = Object.keys(this.state.conversations).map(obj => this.state.conversations[obj]);
     if (!_.find(conversations, { 'name': 'general' })) {
       console.log( conversations);
+      console.log(this.state.user);
     }
     return (
       <div>
@@ -77,7 +79,7 @@ class App extends Component {
                     <ChatRoom {...routerProps} user={this.state.user} conversations={conversations} />
                   )} />
                   <Route path='/add' render={(routerProps) => (
-                    <AddConvo {...routerProps} convoArray={conversations} />
+                    <AddConvo {...routerProps} convoArray={conversations} user={this.state.user}/>
                   )} />
                   <Redirect to="/" />
                 </Switch>
@@ -154,7 +156,7 @@ class NavMenuItems extends Component {
   render() {
     if (this.props.conversation.messages != 0 | this.props.conversation.name === 'general') { //displays only if conversation has message unless it's general
       return (<NavItem>
-        <NavLink to={"/conversations/" + this.props.conversation.name} activeClassName='activeLink'>{this.props.conversation.name}</NavLink>
+        <NavLink exact to={"/conversations/" + this.props.conversation.name} activeClassName='activeLink'>{this.props.conversation.name}</NavLink>
       </NavItem>);
     } else {
       return '';

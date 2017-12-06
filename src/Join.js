@@ -17,6 +17,8 @@ class Join extends Component {
 
     firebase.auth().createUserWithEmailAndPassword(email, password)
       .then((firebaseUser) => {
+        let users = firebase.database().ref('users');
+        users.push({'userId' :firebaseUser.uid, 'username': handle}); 
         return firebaseUser.updateProfile({
           displayName: handle,
           photoURL: "https://gravatar.com/avatar/" + md5(email)
