@@ -2,6 +2,7 @@ import React, { Component } from 'react'; //import React Component
 import { MessageBox } from './MessageBox';
 import { MessageList } from './MessageList';
 import _ from 'lodash';
+import { Redirect } from 'react-router-dom';
 
 export class ChatRoom extends Component {
     constructor(props) {
@@ -10,6 +11,12 @@ export class ChatRoom extends Component {
     }
     render() {
         let convoName = this.props.match.params.Id;
+        let conversation = _.find(this.props.conversations, { 'name': convoName }) || [];
+        if (this.props.user) {
+            if (conversation.userId1 != this.props.user.uid) {
+                return <Redirect to='/conversations' />;
+            }
+        }
         return (
             <div>
                 {/*Displays list of messages and chat box*/}

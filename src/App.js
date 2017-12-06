@@ -67,7 +67,7 @@ class App extends Component {
                     <ConvoList {...routerProps} conversations={conversations} login={this.state.login} currentUser={this.state.user} />
                   )} />
                   <Route exact path='/conversations' render={(routerProps) => (
-                    <ConvoList {...routerProps} conversations={conversations} login={this.state.login} />
+                    <ConvoList {...routerProps} conversations={conversations} login={this.state.login} currentUser={this.state.user} />
                   )} />
                   <Route path='/login' render={(routerProps) => (
                     <Login {...routerProps} user={this.state.user} loading={this.state.loading} />
