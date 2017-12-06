@@ -45,10 +45,7 @@ export class MessageBox extends Component {
       });
       firebase.database().ref('messages/' + convo.username2 + '+' + convo.username1).push(newMessage);
       let id1;
-      if (_.find(this.props.conversations, {
-        'name': convo.username2 + '+' + convo.username1,
-        'userId2': this.props.currentUser.uid
-      })) {
+      if (_.find(this.props.conversations, { 'name': convo.username2 + '+' + convo.username1, 'userId2': this.props.currentUser.uid })) {
         id1 = _.find(this.props.conversations, {
           'name': convo.username2 + '+' + convo.username1,
           'userId2': this.props.currentUser.uid
