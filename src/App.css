@@ -1,4 +1,4 @@
-.App {
+.App, #filter_outer_container, .center-outer-div{
   text-align: center;
 }
 
@@ -72,19 +72,20 @@ html, body
   text-align: center;
 }
 
-.music_card{
+.music_card, .edit_card{
   width: 100px;
   height: auto;
   padding: 5px;
-  margin-right: 15px;
+  margin-right: 7.5px;
+  margin-left: 7.5px;
   flex: 0 0 auto;
 }
 
-.music_card > .card-title{
+.music_card > .card-title, .edit_card > .card-title{
   font-size: 1rem;
 }
 
-.music_card > .card-subtitle{
+.music_card > .card-subtitle, .edit_card > .card-subtitle{
   font-size: .8rem;
 }
 
@@ -107,12 +108,22 @@ button.btn.btn-primary.active{
   border-color: rgb(0, 188, 212) !important;
 }
 
-.container-outer { 
-  overflow: scroll; width: 300px; height: 210px; 
+.container-outer{ 
+  overflow: scroll; 
+  width: 300px; 
+  height: 210px; 
   width:100%;
   display: inline-block;
 }
-.container-inner { 
+
+.outside-edit-container {
+  overflow: scroll; 
+  width: 300px; 
+  width:100%;
+  display: inline-block;
+}
+
+.container-inner, .inside-edit-container{ 
   overflow: scroll;
   display: flex; 
   flex-wrap: nowrap;
@@ -125,9 +136,10 @@ button.btn.btn-primary.active{
   padding-right:0px;
 }
 
-.action_buttons {
+.action_buttons, #filter_inner_container, .center-inner-div{
   display: inline-block;
 }
+
 .action_buttons > .btn.btn-link{
   margin-right: 25px;
   margin-left: 25px;
@@ -155,4 +167,65 @@ button > img{
   height: 100px;
   /* bring your own prefixes */
   transform: translate(-50%, -50%);
+}
+
+#age_filter_container{
+  float: left;
+}
+
+.filter_label{
+  font-weight: bold;
+}
+
+.secondary_text{
+  color: grey;
+  font-style: italic;
+}
+
+#filter_outer_container > div > div {
+  height: 250px;
+  border-radius: 15px
+}
+
+.records {
+  display: flex; /* flexbox for wrapping */
+  flex-wrap: wrap;
+  margin-bottom: 1em;
+}
+
+#records{
+  display: inline-flex;
+  flex-wrap: wrap;
+  width: 380px;
+  margin-top: 10px;
+}
+
+#records > img {
+  margin: 5px;
+  width: 75px;
+  height: 75px;
+  border-radius:50%;
+  cursor: pointer; /* so looks clickable! */
+}
+
+.outside-add-container{
+  text-align: center;
+  margin-top: 15px;
+}
+
+.inside-add-container{
+  display: inline-block;
+
+}
+
+.form-inline{
+  display: inline-flex;
+}
+
+.music_card > button, .edit_card > button{
+  margin-top: 10px;
+}
+
+.music_card {
+  margin-bottom: 10px;
 }
