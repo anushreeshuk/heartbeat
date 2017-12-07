@@ -7,6 +7,9 @@ import skip from './img/skip.png';
 import SignUpForm from './SignUp';
 import SignInForm from './SignIn';
 
+//added from chat app below
+import {ConversationsList, ConversationCard, MessagesList, MessageCard, SendMessageForm, NavDrawer} from './chat.js'
+
 //Firebase Imports
 import firebase, { storage } from 'firebase/app';
 import { BrowserRouter, Route, Switch, Link, NavLink, Redirect } from 'react-router-dom';
@@ -52,6 +55,11 @@ class App extends Component {
       loading: true,
       navOpen: false,
       filterOpen: false,
+
+      //added from chat app below
+      conversations: [],
+      messages: [],
+
       users: [],
       checkboxesSelected: ["Artists", "Albums", "Songs"],
       ageRange: [0, 100],
@@ -73,12 +81,28 @@ class App extends Component {
 
     this.usersRef = firebase.database().ref("users");
     this.usersRef.on("value", (snapshot) => {
-      this.profileRef = firebase.database().ref("users/" + this.state.user.uid);
-      this.profileRef.on("value", (snapshot) => {
-        this.setState({ userProfile: snapshot.val() });
-      });
+      if (this.state.user) {
+
+        this.profileRef = firebase.database().ref("users/" + this.state.user.uid);
+        this.profileRef.on("value", (snapshot) => {
+          this.setState({ userProfile: snapshot.val() });
+        });
+
+      }
 
       this.setState({ users: snapshot.val() });
+
+      // ADDED FROM CHAT APP BELOW
+      this.convoRef = firebase.database().ref("conversations");
+      this.convoRef.on("value", (snapshot) => {
+        this.setState({ conversations: snapshot.val() });
+      })
+
+      this.messagesRef = firebase.database().ref("messages");
+      this.messagesRef.on("value", (snapshot) => {
+        this.setState({ messages: snapshot.val() });
+      })
+
     })
 
 
@@ -89,6 +113,10 @@ class App extends Component {
     this.authUnRegFunc();
     this.usersRef.off();
     this.profileRef.off();
+
+    //added from chat app below
+    this.messagesRef.off();
+    this.convoRef.off();
   }
 
   handleLike(uid, name) {
@@ -163,40 +191,40 @@ class App extends Component {
 
   }
 
-  // Sends a new message to the desired conversation with the inputted text
-  sendMessage() {
-    // TODO: add a new task and sen it to firebase
-    // TODO: if you don't see a task appearing, look at the console
-    //       and be sure to set up open security rules
-    //       https://info343.github.io/firebase.html#security-rules
-    let newSong = {
-      "wrapperType": "collection",
-      "collectionType": "Album",
-      "artistId": 271256,
-      "collectionId": 966997496,
-      "amgArtistId": 905792,
-      "artistName": "Drake",
-      "collectionName": "If You're Reading This It's Too Late",
-      "collectionCensoredName": "If You're Reading This It's Too Late",
-      "artistViewUrl": "https://itunes.apple.com/us/artist/drake/271256?uo=4",
-      "collectionViewUrl": "https://itunes.apple.com/us/album/if-youre-reading-this-its-too-late/966997496?uo=4",
-      "artworkUrl60": "http://is3.mzstatic.com/image/thumb/Music3/v4/ff/e3/8b/ffe38bc5-3ad5-3da5-1089-b467770ab617/source/60x60bb.jpg",
-      "artworkUrl100": "http://is3.mzstatic.com/image/thumb/Music3/v4/ff/e3/8b/ffe38bc5-3ad5-3da5-1089-b467770ab617/source/100x100bb.jpg",
-      "collectionPrice": 9.99,
-      "collectionExplicitness": "explicit",
-      "contentAdvisoryRating": "Explicit",
-      "trackCount": 17,
-      "copyright": "℗ 2015 Cash Money Records Inc.",
-      "country": "USA",
-      "currency": "USD",
-      "releaseDate": "2015-02-12T08:00:00Z",
-      "primaryGenreName": "Hip-Hop/Rap"
-    }
-    this.profileRef.child("albums").push(
-      newSong
-    )
+  // // Sends a new message to the desired conversation with the inputted text
+  // sendMessage() {
+  //   // TODO: add a new task and sen it to firebase
+  //   // TODO: if you don't see a task appearing, look at the console
+  //   //       and be sure to set up open security rules
+  //   //       https://info343.github.io/firebase.html#security-rules
+  //   let newSong = {
+  //     "wrapperType": "collection",
+  //     "collectionType": "Album",
+  //     "artistId": 271256,
+  //     "collectionId": 966997496,
+  //     "amgArtistId": 905792,
+  //     "artistName": "Drake",
+  //     "collectionName": "If You're Reading This It's Too Late",
+  //     "collectionCensoredName": "If You're Reading This It's Too Late",
+  //     "artistViewUrl": "https://itunes.apple.com/us/artist/drake/271256?uo=4",
+  //     "collectionViewUrl": "https://itunes.apple.com/us/album/if-youre-reading-this-its-too-late/966997496?uo=4",
+  //     "artworkUrl60": "http://is3.mzstatic.com/image/thumb/Music3/v4/ff/e3/8b/ffe38bc5-3ad5-3da5-1089-b467770ab617/source/60x60bb.jpg",
+  //     "artworkUrl100": "http://is3.mzstatic.com/image/thumb/Music3/v4/ff/e3/8b/ffe38bc5-3ad5-3da5-1089-b467770ab617/source/100x100bb.jpg",
+  //     "collectionPrice": 9.99,
+  //     "collectionExplicitness": "explicit",
+  //     "contentAdvisoryRating": "Explicit",
+  //     "trackCount": 17,
+  //     "copyright": "℗ 2015 Cash Money Records Inc.",
+  //     "country": "USA",
+  //     "currency": "USD",
+  //     "releaseDate": "2015-02-12T08:00:00Z",
+  //     "primaryGenreName": "Hip-Hop/Rap"
+  //   }
+  //   this.profileRef.child("albums").push(
+  //     newSong
+  //   )
 
-  }
+  // }
 
   // Used to toggle the navigation bar from the header 
   toggleNav() {
@@ -228,6 +256,37 @@ class App extends Component {
       }
     }
   }
+
+  //added from chat app
+  sendMessage(messageText, conversationName) {
+    // TODO: add a new task and sen it to firebase
+    // TODO: if you don't see a task appearing, look at the console
+    //       and be sure to set up open security rules
+    //       https://info343.github.io/firebase.html#security-rules
+    let newMessage = {
+      author: this.state.user.email,
+      displayName: this.state.user.displayName,
+      photoURL: this.state.user.photoURL,
+      text: messageText,
+      timestamp: firebase.database.ServerValue.TIMESTAMP,
+    }
+
+    let updatedNumMessages = 1;
+    if (this.state.conversations[conversationName]) {
+      updatedNumMessages = (this.state.conversations[conversationName].messages + 1);
+    }
+
+    let newConversation = {
+      lastMessage: newMessage,
+      messages: updatedNumMessages
+    }
+
+    this.convoRef.child(conversationName).set(newConversation);
+
+    this.messagesRef.child(conversationName).push(newMessage)
+      .catch(err => console.log(err));
+  }
+
 
   render() {
     let content = null; //content to render
@@ -320,6 +379,33 @@ class App extends Component {
 
     };
 
+    //Added from chat app below
+    let renderConversation = (routerProps) => {
+
+      if (this.state.user) {
+        return <div>
+
+
+          <TopHeader
+            className="mb-4"
+            title={routerProps.match.params.convoName}
+            toggleNavCallback={() => this.toggleNav()}
+            toggleFilterCallback={() => this.toggleFilter()}
+          />
+
+          <MessagesList
+
+            messages={this.state.messages}
+            sendMessageCallback={
+              (messageText, conversationName) => this.sendMessage(messageText, conversationName)
+            }
+            conversationName={routerProps.match.params.convoName} />
+        </div>
+      } else {
+        return <Redirect to='/login' />
+      }
+
+    };
 
     content = (
 
@@ -330,12 +416,23 @@ class App extends Component {
           <Route exact path='/login' render={renderSignIn} />
           <Route exact path='/join' render={renderSignUp} />
           <Route exact path='/edit' render={renderEdit} />
+
+          {/* Added from chat app below*/}
+          <Route exact path='/conversations/:convoName' render={renderConversation} />
+
         </Switch>
 
+        {/*added from chat app below*/}
         <NavDrawer
           open={this.state.navOpen}
           toggleCallback={() => this.toggleNav()}
           state={this.state}
+          user={this.state.user}
+          conversationList=
+          {<ConversationsList
+            messages={this.state.messages}
+            conversations={this.state.conversations}
+            toggleCallback={() => this.toggleNav()} />}
           signOutCallback={() => this.handleSignOut()}
           sendMessageCallback={(name) => this.sendMessage()} />
 
@@ -409,7 +506,7 @@ class AddSong extends Component {
                 <CardImg top src={item.artworkUrl100} alt="Card image cap" />}
               <CardTitle>{item.trackName}</CardTitle>
               <CardSubtitle>{item.artistName}</CardSubtitle>
-              <Button color="success">Add</Button>
+              <Button color="success" onClick={() => console.log(item.artistId)}>Add</Button>
             </Card>
           });
 
@@ -1039,66 +1136,393 @@ class FilterDrawer extends Component {
 
 /* Navigation Drawer component holding access to all the conversations, as well as the ability to create
 new conversations, go back to home, or logout. */
-class NavDrawer extends Component {
+// class NavDrawer extends Component {
 
-  render() {
+//   render() {
 
-    return (
-      <MuiThemeProvider>
-        <div>
-          <Drawer
-            id="filter_drawer"
-            className="drawer"
-            open={this.props.open}
-          >
-            <AppBar
-              title="Conversations"
-              iconElementLeft={<IconButton role="button"><NavigationClose /></IconButton>}
-              onLeftIconButtonTouchTap={() => this.props.toggleCallback()}
-            />
+//     return (
+//       <MuiThemeProvider>
+//         <div>
+//           <Drawer
+//             id="filter_drawer"
+//             className="drawer"
+//             open={this.props.open}
+//           >
+//             <AppBar
+//               title="Conversations"
+//               iconElementLeft={<IconButton role="button"><NavigationClose /></IconButton>}
+//               onLeftIconButtonTouchTap={() => this.props.toggleCallback()}
+//             />
 
-            { // Prompt user to log in if they are not
-              !this.props.state.user &&
-              <p className="alert alert-info">Please Log In First!</p>}
+//             { // Prompt user to log in if they are not
+//               !this.props.state.user &&
+//               <p className="alert alert-info">Please Log In First!</p>}
 
-            { //Content shown when logged in
-              this.props.state.user &&
-              <div>
+//             { //Content shown when logged in
+//               this.props.state.user &&
+//               <div>
 
-                <div>
-                  <Link to="/">
-                    <Button
-                      role="button"
-                      color="info"
-                      onClick={() => console.log(this.props.state)}>
-                      Home
-                  </Button>
-                  </Link>
+//                 <div>
+//                   <Link to="/">
+//                     <Button
+//                       role="button"
+//                       color="info"
+//                       onClick={() => console.log(this.props.state)}>
+//                       Home
+//                   </Button>
+//                   </Link>
 
-                  <Button
-                    role="button"
-                    color="info"
-                    onClick={() => this.props.sendMessageCallback()}>
-                    Fill
-                  </Button>
+//                   <Button
+//                     role="button"
+//                     color="info"
+//                     onClick={() => this.props.sendMessageCallback()}>
+//                     Fill
+//                   </Button>
 
 
-                  <Link to="/">
-                    <Button
-                      role="button"
-                      color="warning"
-                      onClick={() => this.props.signOutCallback()}>
-                      Log Out
-                  </Button>
-                  </Link>
-                </div>
-              </div>
-            }
-          </Drawer>
-        </div>
-      </MuiThemeProvider>
-    );
-  }
-}
+//                   <Link to="/">
+//                     <Button
+//                       role="button"
+//                       color="warning"
+//                       onClick={() => this.props.signOutCallback()}>
+//                       Log Out
+//                   </Button>
+//                   </Link>
+//                 </div>
+//               </div>
+//             }
+//           </Drawer>
+//         </div>
+//       </MuiThemeProvider>
+//     );
+//   }
+// }
 
+// //added from chat app below
+// class ConversationsList extends Component {
+//   render() {
+
+//     //represents the list of conversations that will be constructed and returned 
+//     let conversationsList;
+
+//     if (this.props.conversations) {
+//       //iterate through the conversations prop and create a conversation card for each
+//       if (Object.keys(this.props.conversations).length > 0) {
+//         conversationsList = Object.keys(this.props.conversations).map((convo) => {
+
+//           return <ConversationCard
+//             key={convo}
+//             title={convo}
+//             subtitle={"Last Message: '" + this.props.conversations[convo].lastMessage.text + "' -" + this.props.conversations[convo].lastMessage.displayName}
+//             text={"# of Messages: " + this.props.conversations[convo].messages}
+//             reroute={"/conversations/" + convo}
+//             toggleCallback={() => this.props.toggleCallback()} />
+//         });
+//         //if there is no conversations passed, make the default "general" conversation card  
+//       } else {
+//         conversationsList = <ConversationCard
+//           key={"general"}
+//           title={"general"}
+//           subtitle="fill this"
+//           text="fill this"
+//           reroute={"/conversations/general"}
+//           toggleCallback={() => this.props.toggleCallback()} />
+//       }
+//     }
+
+//     return (
+//       <div
+//         className="conversations-list"
+//         role="region"
+//         aria-live="polite">
+//         {conversationsList}
+//       </div>
+//     );
+//   }
+// }
+
+// //added from chat app below
+// class ConversationCard extends Component {
+//   render() {
+
+//     return (
+//       <div>
+//         <Card className="convo-card">
+//           <CardBody>
+//             <CardTitle aria-label="conversation title">{this.props.title}</CardTitle>
+//             <CardSubtitle aria-label="last message">{this.props.subtitle}</CardSubtitle>
+//             <CardText aria-label="number of messages">{this.props.text}</CardText>
+//             <Link aria-label="go to conversation" to={this.props.reroute}>
+//               <Button role="button" color="info" onClick={() => this.props.toggleCallback()}>
+//                 Go
+//               </Button>
+//             </Link>
+//           </CardBody>
+//         </Card>
+//       </div>
+//     );
+//   }
+// }
+
+// //added from chat app below
+// class MessagesList extends Component {
+//   render() {
+
+//     // List of messages that will be constructed with multiple message cards for this conversation
+//     let messageList;
+
+//     if (this.props.messages[this.props.conversationName]) {
+
+//       messageList = Object.keys(this.props.messages[this.props.conversationName]).map((msgkey) => {
+//         let msg = this.props.messages[this.props.conversationName][msgkey];
+//         return <MessageCard
+//           key={msgkey}
+//           author={msg.author}
+//           displayName={msg.displayName}
+//           photoURL={msg.photoURL}
+//           text={msg.text}
+//           timestamp={msg.timestamp} />
+//       });
+//     }
+
+//     return (
+//       <div className="container-fluid">
+//         <div className="row">
+//           <h1> {this.props.conversationName} </h1>
+//         </div>
+
+//         <div className="row">
+//           <div className="col-12" >
+//             <div
+//               className="messages-list"
+//               role="region"
+//               aria-live="polite">
+//               {messageList && messageList.length > 0 &&
+//                 messageList}
+//               { // incase there are no messages in this conversation
+//                 !messageList &&
+//                 <p className="alert alert-info">No Messages Available</p>}
+//             </div>
+//           </div>
+//         </div>
+
+//         <div className="row">
+//           <div className="col-12">
+//             <SendMessageForm
+//               submitCallback={(messageText, conversationName) => { this.props.sendMessageCallback(messageText, conversationName) }}
+//               conversationName={this.props.conversationName} />
+//           </div>
+//         </div>
+//       </div>
+
+//     );
+//   }
+// }
+
+// //added from chat app below
+// // Shows a specific message that includes the display name, picture, text, and time sent
+// class MessageCard extends Component {
+//   render() {
+
+//     // Using Remarkable's library to render Markdown in messages
+//     let md = new Remarkable({
+//       linkify: true,
+//       link_open: function (tokens, idx /*, options, env */) {
+//         var title = tokens[idx].title ? (' title="' + this.escapeHtml(this.replaceEntities(tokens[idx].title)) + '"') : '';
+//         return '<a target="_blank" href="' + this.escapeHtml(tokens[idx].href) + '"' + title + '>';
+//       }
+//     });
+
+//     return (
+//       <Card className="message-card">
+//         <CardBody>
+//           <CardTitle aria-label="sender information">
+//             <img className="avatar-mini" src={this.props.photoURL} alt={this.props.displayName} />
+//             {this.props.displayName}</CardTitle>
+//           <CardSubtitle className="message-time" aria-label="message sent time">
+//             {new Date(this.props.timestamp).toLocaleString()}
+//           </CardSubtitle>
+//           <CardText className="message-text" aria-label="message text">{renderHTML(md.render(this.props.text))}</CardText>
+//         </CardBody>
+//       </Card>
+//     );
+//   }
+// }
+
+// //added from chat app below
+// // Form used to input and send new messages to conversations, 
+// class SendMessageForm extends Component {
+//   constructor(props) {
+//     super(props);
+//     this.state = { value: '' }; //initial state
+//   }
+
+//   // Appropriately addressing change for the input box
+//   handleChange(event) {
+//     let storageKey = this.props.conversationName + "_draft";
+//     this.setState({ value: event.target.value });
+//     localStorage.setItem(storageKey, event.target.value);
+//   }
+
+//   // Callback for when the submit button is clicked 
+//   handleClick(event) {
+//     event.preventDefault();
+//     let storageKey = this.props.conversationName + "_draft";
+//     this.props.submitCallback(this.state.value, this.props.conversationName);
+//     this.setState({ value: '' }); //reset once finished
+//     localStorage.setItem(storageKey, event.target.value);
+//   }
+
+//   // Used to updated value with the local storage to mimick a draft 
+//   updateValue() {
+//     let storageKey = this.props.conversationName + "_draft";
+//     this.setState({ value: localStorage.getItem(storageKey) });
+//   }
+
+//   render() {
+//     let storageKey = this.props.conversationName + "_draft";
+//     let fieldValue = this.state.value;
+
+//     if (fieldValue !== localStorage.getItem(storageKey) && localStorage.getItem(storageKey) !== null) {
+//       fieldValue = localStorage.getItem(storageKey);
+//       this.updateValue();
+//     }
+
+//     return (
+//       <form>
+//         <div className="container" />
+//         <div className="row align-items-start">
+//           <div className="col-9">
+//             <Input
+//               role="textbox"
+//               className="form-control mb-3"
+//               placeholder="Message"
+//               value={fieldValue}
+//               onChange={(event) => { this.handleChange(event) }}
+//             />
+//           </div>
+
+//           <div className="col-3">
+//             <Button
+//               role="button"
+//               color="primary"
+//               className="mt-0"
+//               onClick={(event) => { this.handleClick(event) }}>
+//               Send
+//             </Button>
+//           </div>
+//         </div>
+//       </form>
+//     );
+//   }
+// }
+
+// class NavDrawer extends Component {
+//   constructor(props) {
+//     super(props);
+
+//     this.state = {
+//       modal: false,
+//       newConvoValue: ''
+//     };
+
+//     this.toggleModal = this.toggleModal.bind(this);
+//   }
+
+//   // Used to toggle the popup modal that prompts for a new conversation
+//   toggleModal() {
+//     this.setState({
+//       modal: !this.state.modal,
+//       backdrop: true
+//     });
+//   }
+
+//   // Callback for when user is inputting a name of a new conversation
+//   handleChange(event) {
+//     this.setState({ newConvoValue: event.target.value });
+//   }
+
+//   render() {
+
+//     return (
+//       <MuiThemeProvider>
+//         <div>
+//           <Drawer
+//             className="drawer"
+//             open={this.props.open}
+//           >
+//             <AppBar
+//               title="Conversations"
+//               iconElementLeft={<IconButton role="button"><NavigationClose /></IconButton>}
+//               onLeftIconButtonTouchTap={() => this.props.toggleCallback()}
+//             />
+
+//             { // Prompt user to log in if they are not
+//               !this.props.user &&
+//               <p className="alert alert-info">Please Log In First!</p>}
+
+//             { //Content shown when logged in
+//               this.props.user &&
+//               <div>
+//                 <div>
+//                   {this.props.conversationList}
+
+//                   <Button
+//                     role="button"
+//                     color="info"
+//                     id="newConvoPopover"
+//                     onClick={() => { this.props.toggleCallback(); this.toggleModal() }}>
+//                     New Conversation
+//                 </Button>
+
+//                   <Modal
+//                     aria-label="new conversation modal"
+//                     isOpen={this.state.modal}
+//                     toggle={this.toggle} className="modal-popover">
+//                     <ModalHeader aria-label="make new conversation">New Conversation</ModalHeader>
+//                     <ModalBody>
+//                       Please enter the name of your new conversation:
+//                     <Input role="textbox" onChange={(event) => this.handleChange(event)} />
+//                     </ModalBody>
+//                     <ModalFooter>
+//                       <Link to={"/conversations/" + this.state.newConvoValue}>
+//                         <Button role="button" color="primary" onClick={() => this.toggleModal()}>
+//                           Create
+//                       </Button>
+//                       </Link>
+
+//                       <Button role="button" color="secondary" onClick={() => this.toggleModal()}>
+//                         Cancel
+//                       </Button>
+//                     </ModalFooter>
+//                   </Modal>
+//                 </div>
+
+//                 <div>
+//                   <Link to="/conversations">
+//                     <Button
+//                       role="button"
+//                       color="info"
+//                       onClick={() => this.props.toggleCallback()}>
+//                       Home
+//                   </Button>
+//                   </Link>
+
+//                   <Link to="/">
+//                     <Button
+//                       role="button"
+//                       color="warning"
+//                       onClick={() => this.props.signOutCallback()}>
+//                       Log Out
+//                   </Button>
+//                   </Link>
+//                 </div>
+//               </div>
+//             }
+//           </Drawer>
+//         </div>
+//       </MuiThemeProvider>
+//     );
+//   }
+// }
 export default App;
