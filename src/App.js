@@ -64,6 +64,7 @@ class App extends Component {
       users: [],
       checkboxesSelected: ["Artists", "Albums", "Songs"],
       ageRange: [0, 100],
+      profileInput: {}
     };
   }
 
@@ -137,19 +138,23 @@ class App extends Component {
       console.log(this.state.userLikes[uid]);
       this.userLikesRef.child(uid).child(this.state.user.uid).child("likedBack").set(true);
 
+
       //make a new object for A that includes B with liked back TRUE
       this.userLikesRef.child(this.state.user.uid).child(uid).child("likedBack").set(true);
-
-      Object.keys(this.state.userLikes[this.state.user.uid]).map((key) => {
-        if (this.state.userLikes[this.state.user.uid][key]["likedBack"]) {
-          console.log("Mutual match with " + this.state.users[key]["name"]);
-          this.convoRef.child(this.state.user.uid + "+" + key).set({
-            members: [this.state.user.uid, key],
-            lastMessage: "No Messages",
-            messages: 0
-          })
-        }
-      })
+      
+      
+      if (this.state.userLikes[this.state.user.uid]) {
+        Object.keys(this.state.userLikes[this.state.user.uid]).map((key) => {
+          if (this.state.userLikes[this.state.user.uid][key]["likedBack"]) {
+            console.log("Mutual match with " + this.state.users[key]["name"]);
+            this.convoRef.child(this.state.user.uid + "+" + key).set({
+              members: [this.state.user.uid, key],
+              lastMessage: "No Messages",
+              messages: 0
+            })
+          }
+        })
+      }
 
     } else {
       //case where B is not in userLikes
@@ -171,21 +176,29 @@ class App extends Component {
   }
 
   // A callback function for registering new users in the chat
-  handleSignUp(email, password, handle, avatar) {
-    this.setState({ errorMessage: null }); //clear any old errors
+  handleSignUp(email, password, handle, avatar, userAge) {
+    console.log(userAge);
+    this.setState({ errorMessage: null, profileInput: { name: handle, age: parseInt(userAge) } }); //clear any old errors
     let gravatarImg = "https://www.gravatar.com/avatar/" + md5(email);
 
     /* TODO: sign up user here */
     firebase.auth()
       .createUserWithEmailAndPassword(email, password)
       .then((firebaseUser) => {
-        let promise = firebaseUser.updateProfile({ displayName: handle, photoURL: gravatarImg })
+        let promise = firebaseUser.updateProfile({ displayName: handle, photoURL: gravatarImg, age: userAge })
         return promise;
       })
       .catch((err) => this.setState({ errorMessage: err.message }))
       .then(() => {
         this.setState({ email: '', password: '' });
+        console.log(this.state.user);
+        // this.usersRef.child(this.state.user.uid).set({ 
+        //   uid: this.state.user.uid,
+        //   age: this.state.profileInput.age,
+        //   name: this.state.profileInput.handle
+        // })
       });
+
 
   }
 
@@ -328,9 +341,17 @@ class App extends Component {
         />
         <h1> Sign Up </h1>
         <SignUpForm
-          signUpCallback={(e, p, h, a) => this.handleSignUp(e, p, h, a)}
+          signUpCallback={(e, p, h, a, age) => this.handleSignUp(e, p, h, a, age)}
           user={this.state.user}
         />
+        {/* <EditPage
+          users={this.state.users}
+          user={this.state.user}
+          profile={this.state.userProfile}
+          usersRef={this.usersRef}
+          profileInput={this.state.profileInput}
+          handleDeleteCallback={(key, type) => this.handleDelete(key, type)}
+          addItemCallback={(id, type) => this.addItem(id, type)} /> */}
       </div>
 
     };
@@ -396,6 +417,8 @@ class App extends Component {
             users={this.state.users}
             user={this.state.user}
             profile={this.state.userProfile}
+            usersRef={this.usersRef}
+            profileInput={this.state.profileInput}
             handleDeleteCallback={(key, type) => this.handleDelete(key, type)}
             addItemCallback={(id, type) => this.addItem(id, type)} />
         </div>
@@ -447,6 +470,7 @@ class App extends Component {
           <Route exact path='/login' render={renderSignIn} />
           <Route exact path='/join' render={renderSignUp} />
           <Route exact path='/edit' render={renderEdit} />
+
 
           {/* Added from chat app below*/}
           <Route exact path='/conversations/:convoName' render={renderConversation} />
@@ -550,7 +574,7 @@ class SearchResults extends Component {
 }
 
 
-class AddSong extends Component {
+export class AddSong extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -616,7 +640,7 @@ class AddSong extends Component {
               <option>Songs</option>
             </Input>
           </FormGroup>
-          <button type="submit" className="btn btn-primary" onClick={(event) => {event.preventDefault(); this.fetchTrackList(this.state.searchValue)}}>
+          <button type="submit" className="btn btn-primary" onClick={(event) => { event.preventDefault(); this.fetchTrackList(this.state.searchValue) }}>
             <i className="fa fa-music" aria-hidden="true"></i> Search!
         </button>
         </form>
@@ -633,7 +657,7 @@ class AddSong extends Component {
   }
 }
 
-class EditPage extends Component {
+export class EditPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -652,62 +676,74 @@ class EditPage extends Component {
     let name = "";
     let age = "";
 
-    if (this.props.profile) {
-      if (this.props.profile.albums) {
+    console.log(this.props.profileInput);
+    console.log(this.props.profile);
+    if (Object.keys(this.props.profileInput).length === 0) {
+      if (this.props.profile) {
+        if (this.props.profile.albums) {
+          name = this.props.profile.name;
+          age = this.props.profile.age;
 
-        name = this.props.profile.name;
-        age = this.props.profile.age;
-
-        if (this.state.rSelected === "Albums") {
-          displayCollection = Object.keys(this.props.profile.albums).map((albumKey) => {
-            let album = this.props.profile.albums[albumKey];
-            return <Card key={albumKey} className="edit_card">
-              <CardImg top src={album.artworkUrl100} alt="Card image cap" />
-              <CardTitle>{album.collectionName}</CardTitle>
-              <CardSubtitle>{album.artistName}</CardSubtitle>
-              <Button
-                color="danger"
-                style={{ display: "inline-block" }}
-                onClick={() => this.props.handleDeleteCallback("albums", albumKey)}>
-                Delete
+          if (this.state.rSelected === "Albums") {
+            displayCollection = Object.keys(this.props.profile.albums).map((albumKey) => {
+              let album = this.props.profile.albums[albumKey];
+              return <Card key={albumKey} className="edit_card">
+                <CardImg top src={album.artworkUrl100} alt="Card image cap" />
+                <CardTitle>{album.collectionName}</CardTitle>
+                <CardSubtitle>{album.artistName}</CardSubtitle>
+                <Button
+                  color="danger"
+                  style={{ display: "inline-block" }}
+                  onClick={() => this.props.handleDeleteCallback("albums", albumKey)}>
+                  Delete
               </Button>
-            </Card>
-          });
-        }
+              </Card>
+            });
+          }
 
-        if (this.state.rSelected === "Songs") {
-          displayCollection = Object.keys(this.props.profile.songs).map((songKey) => {
-            let song = this.props.profile.songs[songKey];
-            return <Card key={songKey} className="edit_card">
-              <CardImg top src={song.artworkUrl100} alt="Card image cap" />
-              <CardTitle>{song.trackName}</CardTitle>
-              <CardSubtitle>{song.artistName}</CardSubtitle>
-              <Button
-                color="danger"
-                style={{ display: "inline-block" }}
-                onClick={() => this.props.handleDeleteCallback("songs", songKey)}>
-                Delete
+          if (this.state.rSelected === "Songs") {
+            displayCollection = Object.keys(this.props.profile.songs).map((songKey) => {
+              let song = this.props.profile.songs[songKey];
+              return <Card key={songKey} className="edit_card">
+                <CardImg top src={song.artworkUrl100} alt="Card image cap" />
+                <CardTitle>{song.trackName}</CardTitle>
+                <CardSubtitle>{song.artistName}</CardSubtitle>
+                <Button
+                  color="danger"
+                  style={{ display: "inline-block" }}
+                  onClick={() => this.props.handleDeleteCallback("songs", songKey)}>
+                  Delete
               </Button>
-            </Card>
-          });
-        }
+              </Card>
+            });
+          }
 
-        if (this.state.rSelected === "Artists") {
-          displayCollection = Object.keys(this.props.profile.artists).map((artistKey) => {
-            let artist = this.props.profile.artists[artistKey];
-            return <Card key={artistKey} className="edit_card">
-              <CardTitle>{artist.artistName}</CardTitle>
-              <CardSubtitle>{artist.primaryGenreName}</CardSubtitle>
-              <Button
-                color="danger"
-                style={{ display: "inline-block" }}
-                onClick={() => this.props.handleDeleteCallback("artists", artistKey)}>
-                Delete
+          if (this.state.rSelected === "Artists") {
+            displayCollection = Object.keys(this.props.profile.artists).map((artistKey) => {
+              let artist = this.props.profile.artists[artistKey];
+              return <Card key={artistKey} className="edit_card">
+                <CardTitle>{artist.artistName}</CardTitle>
+                <CardSubtitle>{artist.primaryGenreName}</CardSubtitle>
+                <Button
+                  color="danger"
+                  style={{ display: "inline-block" }}
+                  onClick={() => this.props.handleDeleteCallback("artists", artistKey)}>
+                  Delete
               </Button>
-            </Card>
-          });
+              </Card>
+            });
+          }
         }
       }
+    }
+    else {
+      console.log('here');
+      console.log(this.props.profile);
+      this.props.usersRef.child(this.props.user.uid).set({
+        uid: this.props.user.uid,
+        age: this.props.profileInput.age,
+        name: this.props.profileInput.name
+      })
     }
 
     return (
