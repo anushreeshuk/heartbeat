@@ -138,19 +138,23 @@ class App extends Component {
       console.log(this.state.userLikes[uid]);
       this.userLikesRef.child(uid).child(this.state.user.uid).child("likedBack").set(true);
 
+
       //make a new object for A that includes B with liked back TRUE
       this.userLikesRef.child(this.state.user.uid).child(uid).child("likedBack").set(true);
-
-      Object.keys(this.state.userLikes[this.state.user.uid]).map((key) => {
-        if (this.state.userLikes[this.state.user.uid][key]["likedBack"]) {
-          console.log("Mutual match with " + this.state.users[key]["name"]);
-          this.convoRef.child(this.state.user.uid + "+" + key).set({
-            members: [this.state.user.uid, key],
-            lastMessage: "No Messages",
-            messages: 0
-          })
-        }
-      })
+      
+      
+      if (this.state.userLikes[this.state.user.uid]) {
+        Object.keys(this.state.userLikes[this.state.user.uid]).map((key) => {
+          if (this.state.userLikes[this.state.user.uid][key]["likedBack"]) {
+            console.log("Mutual match with " + this.state.users[key]["name"]);
+            this.convoRef.child(this.state.user.uid + "+" + key).set({
+              members: [this.state.user.uid, key],
+              lastMessage: "No Messages",
+              messages: 0
+            })
+          }
+        })
+      }
 
     } else {
       //case where B is not in userLikes
@@ -676,62 +680,62 @@ export class EditPage extends Component {
     console.log(this.props.profile);
     if (Object.keys(this.props.profileInput).length === 0) {
       if (this.props.profile) {
-        if(this.props.profile.albums) {
-        name = this.props.profile.name;
-        age = this.props.profile.age;
+        if (this.props.profile.albums) {
+          name = this.props.profile.name;
+          age = this.props.profile.age;
 
-        if (this.state.rSelected === "Albums") {
-          displayCollection = Object.keys(this.props.profile.albums).map((albumKey) => {
-            let album = this.props.profile.albums[albumKey];
-            return <Card key={albumKey} className="edit_card">
-              <CardImg top src={album.artworkUrl100} alt="Card image cap" />
-              <CardTitle>{album.collectionName}</CardTitle>
-              <CardSubtitle>{album.artistName}</CardSubtitle>
-              <Button
-                color="danger"
-                style={{ display: "inline-block" }}
-                onClick={() => this.props.handleDeleteCallback("albums", albumKey)}>
-                Delete
+          if (this.state.rSelected === "Albums") {
+            displayCollection = Object.keys(this.props.profile.albums).map((albumKey) => {
+              let album = this.props.profile.albums[albumKey];
+              return <Card key={albumKey} className="edit_card">
+                <CardImg top src={album.artworkUrl100} alt="Card image cap" />
+                <CardTitle>{album.collectionName}</CardTitle>
+                <CardSubtitle>{album.artistName}</CardSubtitle>
+                <Button
+                  color="danger"
+                  style={{ display: "inline-block" }}
+                  onClick={() => this.props.handleDeleteCallback("albums", albumKey)}>
+                  Delete
               </Button>
-            </Card>
-          });
-        }
+              </Card>
+            });
+          }
 
-        if (this.state.rSelected === "Songs") {
-          displayCollection = Object.keys(this.props.profile.songs).map((songKey) => {
-            let song = this.props.profile.songs[songKey];
-            return <Card key={songKey} className="edit_card">
-              <CardImg top src={song.artworkUrl100} alt="Card image cap" />
-              <CardTitle>{song.trackName}</CardTitle>
-              <CardSubtitle>{song.artistName}</CardSubtitle>
-              <Button
-                color="danger"
-                style={{ display: "inline-block" }}
-                onClick={() => this.props.handleDeleteCallback("songs", songKey)}>
-                Delete
+          if (this.state.rSelected === "Songs") {
+            displayCollection = Object.keys(this.props.profile.songs).map((songKey) => {
+              let song = this.props.profile.songs[songKey];
+              return <Card key={songKey} className="edit_card">
+                <CardImg top src={song.artworkUrl100} alt="Card image cap" />
+                <CardTitle>{song.trackName}</CardTitle>
+                <CardSubtitle>{song.artistName}</CardSubtitle>
+                <Button
+                  color="danger"
+                  style={{ display: "inline-block" }}
+                  onClick={() => this.props.handleDeleteCallback("songs", songKey)}>
+                  Delete
               </Button>
-            </Card>
-          });
-        }
+              </Card>
+            });
+          }
 
-        if (this.state.rSelected === "Artists") {
-          displayCollection = Object.keys(this.props.profile.artists).map((artistKey) => {
-            let artist = this.props.profile.artists[artistKey];
-            return <Card key={artistKey} className="edit_card">
-              <CardTitle>{artist.artistName}</CardTitle>
-              <CardSubtitle>{artist.primaryGenreName}</CardSubtitle>
-              <Button
-                color="danger"
-                style={{ display: "inline-block" }}
-                onClick={() => this.props.handleDeleteCallback("artists", artistKey)}>
-                Delete
+          if (this.state.rSelected === "Artists") {
+            displayCollection = Object.keys(this.props.profile.artists).map((artistKey) => {
+              let artist = this.props.profile.artists[artistKey];
+              return <Card key={artistKey} className="edit_card">
+                <CardTitle>{artist.artistName}</CardTitle>
+                <CardSubtitle>{artist.primaryGenreName}</CardSubtitle>
+                <Button
+                  color="danger"
+                  style={{ display: "inline-block" }}
+                  onClick={() => this.props.handleDeleteCallback("artists", artistKey)}>
+                  Delete
               </Button>
-            </Card>
-          });
+              </Card>
+            });
+          }
         }
       }
     }
-  }
     else {
       console.log('here');
       console.log(this.props.profile);
