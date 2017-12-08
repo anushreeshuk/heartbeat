@@ -18,24 +18,16 @@ import 'firebase/database'
 //     messagingSenderId: "538194400345"
 // };
 
-// var config = {
-//     apiKey: "AIzaSyC8SiJmYeouFXdFNfzTqEVq-Oy6ax8fUS0",
-//     authDomain: "test-heartbeat-c4718.firebaseapp.com",
-//     databaseURL: "https://test-heartbeat-c4718.firebaseio.com",
-//     projectId: "test-heartbeat-c4718",
-//     storageBucket: "test-heartbeat-c4718.appspot.com",
-//     messagingSenderId: "895606864826"
-//   };
+// firebase.initializeApp(config);
 
 var config = {
-  apiKey: "AIzaSyCLJbg2GIoLKXAiLHDCG15FaReuqEmxH5c",
-  authDomain: "heartbeat-1a0c7.firebaseapp.com",
-  databaseURL: "https://heartbeat-1a0c7.firebaseio.com",
-  projectId: "heartbeat-1a0c7",
-  storageBucket: "",
-  messagingSenderId: "511606483559"
-};
-
-firebase.initializeApp(config);
+    apiKey: "AIzaSyCLJbg2GIoLKXAiLHDCG15FaReuqEmxH5c",
+    authDomain: "heartbeat-1a0c7.firebaseapp.com",
+    databaseURL: "https://heartbeat-1a0c7.firebaseio.com",
+    projectId: "heartbeat-1a0c7",
+    storageBucket: "",
+    messagingSenderId: "511606483559"
+  };
+  firebase.initializeApp(config);
 
 ReactDOM.render(<BrowserRouter basename={process.env.PUBLIC_URL + '/'}><App /></BrowserRouter>, document.getElementById('root'));

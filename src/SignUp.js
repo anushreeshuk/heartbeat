@@ -1,7 +1,7 @@
 import React, { Component } from 'react'; //import React Component
 import { FormFeedback, Alert, FormGroup, Label, Input, Button } from 'reactstrap'
 import { Redirect } from 'react-router-dom'
-
+import { AddSong, EditPage } from './App';
 // Form group a user will use to sign up on the chat application
 class SignUpForm extends Component {
     constructor(props) {
@@ -11,6 +11,8 @@ class SignUpForm extends Component {
             password: undefined,
             handle: undefined,
             avatar: undefined,
+            age: undefined,
+            
         }; //initialize state
     }
 
@@ -18,12 +20,13 @@ class SignUpForm extends Component {
     handleSignUp(event) {
         event.preventDefault(); //don't submit
         let avatar = this.state.avatar;//assign default if undefined
-        this.props.signUpCallback(this.state.email, this.state.password, this.state.handle, avatar);
+        this.props.signUpCallback(this.state.email, this.state.password, this.state.handle, avatar, this.state.age);
     }
 
     // Used to handle input change in our form
     handleChange(event) {
         this.setState({ [event.target.name]: event.target.value });
+        console.log(this.state[event.target.name]);
     }
 
     /**
@@ -89,6 +92,19 @@ class SignUpForm extends Component {
             return (
 
                 <form>
+                    <FormGroup>
+                        <Label htmlFor="handle">Preferred Name</Label>
+                        <Input
+                            role="textbox"
+                            id="handle"
+                            name="handle"
+                            onChange={(event) => this.handleChange(event)}
+                            valid={handleValid}
+                        />
+                        {handleErrors && handleErrors.length > 0 &&
+                            handleErrors.map((err) => <FormFeedback key={err}>{err}</FormFeedback>)
+                        }
+                    </FormGroup>
 
                     {/* email */}
                     <FormGroup>
@@ -123,18 +139,26 @@ class SignUpForm extends Component {
                     </FormGroup>
 
                     {/* handle */}
+
+
                     <FormGroup>
-                        <Label htmlFor="handle">Handle</Label>
+                        <Label for="age">Age</Label>
                         <Input
                             role="textbox"
-                            id="handle"
-                            name="handle"
+                            id="age"
+                            name="age" 
                             onChange={(event) => this.handleChange(event)}
-                            valid={handleValid}
-                        />
-                        {handleErrors && handleErrors.length > 0 &&
-                            handleErrors.map((err) => <FormFeedback key={err}>{err}</FormFeedback>)
-                        }
+                            />
+                            
+                    </FormGroup>
+
+                    <FormGroup>
+                        <Label for="pic">Add your Profile Photo (url)</Label>
+                        <Input
+                            role="textbox"
+                            id="pic"
+                            name="pic" 
+                            onChange={(event) => this.handleChange(event)}/>
                     </FormGroup>
 
                     {/* buttons */}
@@ -146,12 +170,14 @@ class SignUpForm extends Component {
                         </Button>
                     </FormGroup>
 
+
+
                 </form>
             )
         }
         // Redirect to the root if user is logged in
-         else {
-            return <Redirect to='/' />
+        else {
+            return <Redirect to='/edit' />
         }
     }
 }
