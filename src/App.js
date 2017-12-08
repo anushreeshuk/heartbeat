@@ -64,6 +64,7 @@ class App extends Component {
       users: [],
       checkboxesSelected: ["Artists", "Albums", "Songs"],
       ageRange: [0, 100],
+      profileInput: {}
     };
   }
 
@@ -171,21 +172,29 @@ class App extends Component {
   }
 
   // A callback function for registering new users in the chat
-  handleSignUp(email, password, handle, avatar) {
-    this.setState({ errorMessage: null }); //clear any old errors
+  handleSignUp(email, password, handle, avatar, userAge) {
+    console.log(userAge);
+    this.setState({ errorMessage: null, profileInput: { name: handle, age: parseInt(userAge) } }); //clear any old errors
     let gravatarImg = "https://www.gravatar.com/avatar/" + md5(email);
 
     /* TODO: sign up user here */
     firebase.auth()
       .createUserWithEmailAndPassword(email, password)
       .then((firebaseUser) => {
-        let promise = firebaseUser.updateProfile({ displayName: handle, photoURL: gravatarImg })
+        let promise = firebaseUser.updateProfile({ displayName: handle, photoURL: gravatarImg, age: userAge })
         return promise;
       })
       .catch((err) => this.setState({ errorMessage: err.message }))
       .then(() => {
         this.setState({ email: '', password: '' });
+        console.log(this.state.user);
+        // this.usersRef.child(this.state.user.uid).set({ 
+        //   uid: this.state.user.uid,
+        //   age: this.state.profileInput.age,
+        //   name: this.state.profileInput.handle
+        // })
       });
+
 
   }
 
@@ -328,9 +337,17 @@ class App extends Component {
         />
         <h1> Sign Up </h1>
         <SignUpForm
-          signUpCallback={(e, p, h, a) => this.handleSignUp(e, p, h, a)}
+          signUpCallback={(e, p, h, a, age) => this.handleSignUp(e, p, h, a, age)}
           user={this.state.user}
         />
+        {/* <EditPage
+          users={this.state.users}
+          user={this.state.user}
+          profile={this.state.userProfile}
+          usersRef={this.usersRef}
+          profileInput={this.state.profileInput}
+          handleDeleteCallback={(key, type) => this.handleDelete(key, type)}
+          addItemCallback={(id, type) => this.addItem(id, type)} /> */}
       </div>
 
     };
@@ -396,6 +413,8 @@ class App extends Component {
             users={this.state.users}
             user={this.state.user}
             profile={this.state.userProfile}
+            usersRef={this.usersRef}
+            profileInput={this.state.profileInput}
             handleDeleteCallback={(key, type) => this.handleDelete(key, type)}
             addItemCallback={(id, type) => this.addItem(id, type)} />
         </div>
@@ -447,6 +466,7 @@ class App extends Component {
           <Route exact path='/login' render={renderSignIn} />
           <Route exact path='/join' render={renderSignUp} />
           <Route exact path='/edit' render={renderEdit} />
+
 
           {/* Added from chat app below*/}
           <Route exact path='/conversations/:convoName' render={renderConversation} />
@@ -616,7 +636,7 @@ export class AddSong extends Component {
               <option>Songs</option>
             </Input>
           </FormGroup>
-          <button type="submit" className="btn btn-primary" onClick={(event) => {event.preventDefault(); this.fetchTrackList(this.state.searchValue)}}>
+          <button type="submit" className="btn btn-primary" onClick={(event) => { event.preventDefault(); this.fetchTrackList(this.state.searchValue) }}>
             <i className="fa fa-music" aria-hidden="true"></i> Search!
         </button>
         </form>
@@ -652,9 +672,11 @@ export class EditPage extends Component {
     let name = "";
     let age = "";
 
-    if (this.props.profile) {
-      if (this.props.profile.albums) {
-
+    console.log(this.props.profileInput);
+    console.log(this.props.profile);
+    if (Object.keys(this.props.profileInput).length === 0) {
+      if (this.props.profile) {
+        if(this.props.profile.albums) {
         name = this.props.profile.name;
         age = this.props.profile.age;
 
@@ -708,6 +730,16 @@ export class EditPage extends Component {
           });
         }
       }
+    }
+  }
+    else {
+      console.log('here');
+      console.log(this.props.profile);
+      this.props.usersRef.child(this.props.user.uid).set({
+        uid: this.props.user.uid,
+        age: this.props.profileInput.age,
+        name: this.props.profileInput.name
+      })
     }
 
     return (
