@@ -1122,7 +1122,7 @@ class MatchedCard extends Component {
               <Button color="link" onClick={() => this.props.handleSkipCallback()}><img src={skip} /></Button>
               <Button color="link" onClick={() => {
                 this.props.handleLikeCallback(this.props.profile.uid, this.props.profile.name);
-                this.props.handleSkipCallback(); }} ><img id="like" src={like} /></Button>
+                this.props.handleSkipCallback();}} ><img id="like" src={like} /></Button>
             </ButtonGroup>
           </div>
         </CardBody>
