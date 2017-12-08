@@ -1,7 +1,7 @@
 import React, { Component } from 'react'; //import React Component
 import { FormFeedback, Alert, FormGroup, Label, Input, Button } from 'reactstrap'
 import { Redirect } from 'react-router-dom'
-
+import {AddSong, EditPage} from './App';
 // Form group a user will use to sign up on the chat application
 class SignUpForm extends Component {
     constructor(props) {
@@ -145,6 +145,8 @@ class SignUpForm extends Component {
                             Sign-up
                         </Button>
                     </FormGroup>
+
+                    <EditPage />
 
                 </form>
             )

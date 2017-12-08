@@ -550,7 +550,7 @@ class SearchResults extends Component {
 }
 
 
-class AddSong extends Component {
+export class AddSong extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -633,7 +633,7 @@ class AddSong extends Component {
   }
 }
 
-class EditPage extends Component {
+export class EditPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
