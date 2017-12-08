@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom';
 import './chat.css';
 import like from './img/like.png';
 import skip from './img/skip.png';
+import logo from './img/heartbeat.png';
+
 //Forms 
 import SignUpForm from './SignUp';
 import SignInForm from './SignIn';
@@ -55,14 +57,22 @@ export class ConversationsList extends Component {
             if (Object.keys(this.props.conversations).length > 0) {
                 conversationsList = Object.keys(this.props.conversations).map((convo) => {
 
-                    return <ConversationCard
-                        key={convo}
-                        title={convo}
-                        subtitle={"Last Message: '" + this.props.conversations[convo].lastMessage.text + "' -" + this.props.conversations[convo].lastMessage.displayName}
-                        text={"# of Messages: " + this.props.conversations[convo].messages}
-                        reroute={"/conversations/" + convo}
-                        toggleCallback={() => this.props.toggleCallback()} />
+                    //added afterwards
+                    if (convo.indexOf(this.props.user.uid) > -1) {
+                        let userIds = convo.split("+");
+                        let userName1 = this.props.users[userIds[0]].name;
+                        let userName2 = this.props.users[userIds[1]].name;
+                        return <ConversationCard
+                            key={convo}
+                            title={userName1 + " + " + userName2}
+                            subtitle={"Last Message: '" + this.props.conversations[convo].lastMessage.text + "' -" + this.props.conversations[convo].lastMessage.displayName}
+                            text={"# of Messages: " + this.props.conversations[convo].messages}
+                            reroute={"/conversations/" + convo}
+                            toggleCallback={() => this.props.toggleCallback()} />
+                    }
+
                 });
+
                 //if there is no conversations passed, make the default "general" conversation card  
             } else {
                 conversationsList = <ConversationCard
@@ -79,7 +89,7 @@ export class ConversationsList extends Component {
             <div
                 className="conversations-list"
                 role="region"
-                aria-live="polite">
+                aria-live="polite" >
                 {conversationsList}
             </div>
         );
@@ -132,9 +142,6 @@ export class MessagesList extends Component {
 
         return (
             <div className="container-fluid">
-                <div className="row">
-                    <h1> {this.props.conversationName} </h1>
-                </div>
 
                 <div className="row">
                     <div className="col-12" >
@@ -297,7 +304,7 @@ export class NavDrawer extends Component {
                         open={this.props.open}
                     >
                         <AppBar
-                            title="Conversations"
+                            title={<img id="logo" src={logo} />}
                             iconElementLeft={<IconButton role="button"><NavigationClose /></IconButton>}
                             onLeftIconButtonTouchTap={() => this.props.toggleCallback()}
                         />
@@ -344,7 +351,7 @@ export class NavDrawer extends Component {
                                 </div>
 
                                 <div>
-                                    <Link to="/conversations">
+                                    <Link to="/">
                                         <Button
                                             role="button"
                                             color="info"

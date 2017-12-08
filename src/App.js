@@ -3,12 +3,13 @@ import ReactDOM from 'react-dom';
 import './App.css';
 import like from './img/like.png';
 import skip from './img/skip.png';
+import logo from './img/heartbeat.png';
 //Forms 
 import SignUpForm from './SignUp';
 import SignInForm from './SignIn';
 
 //added from chat app below
-import {ConversationsList, ConversationCard, MessagesList, MessageCard, SendMessageForm, NavDrawer} from './chat.js'
+import { ConversationsList, ConversationCard, MessagesList, MessageCard, SendMessageForm, NavDrawer } from './chat.js'
 
 //Firebase Imports
 import firebase, { storage } from 'firebase/app';
@@ -103,6 +104,11 @@ class App extends Component {
         this.setState({ messages: snapshot.val() });
       })
 
+      this.userLikesRef = firebase.database().ref("userLikes");
+      this.userLikesRef.on("value", (snapshot) => {
+        this.setState({ userLikes: snapshot.val() });
+      })
+
     })
 
 
@@ -120,15 +126,47 @@ class App extends Component {
   }
 
   handleLike(uid, name) {
+    console.log("User Likes Object: ", this.state.userLikes);
+    console.log("Current User's UID: ", this.state.user.uid);
+    console.log("Liked User's UID:", uid);
+
+    if (Object.keys(this.state.userLikes).includes(uid)) {
+      //case where B exists in userLikes
+
+      //check if B has liked A already
+      console.log(this.state.userLikes[uid]);
+      this.userLikesRef.child(uid).child(this.state.user.uid).child("likedBack").set(true);
+
+      //make a new object for A that includes B with liked back TRUE
+      this.userLikesRef.child(this.state.user.uid).child(uid).child("likedBack").set(true);
+
+      Object.keys(this.state.userLikes[this.state.user.uid]).map((key) => {
+        if (this.state.userLikes[this.state.user.uid][key]["likedBack"]) {
+          console.log("Mutual match with " + this.state.users[key]["name"]);
+          this.convoRef.child(this.state.user.uid + "+" + key).set({
+            members: [this.state.user.uid, key],
+            lastMessage: "No Messages",
+            messages: 0
+          })
+        }
+      })
+
+    } else {
+      //case where B is not in userLikes
+
+      //make a new object for A that includes B with liked back FALSE
+      this.userLikesRef.child(this.state.user.uid).child(uid).child("likedBack").set(false);
+
+    }
 
     //Adding current user to liked user's list:
 
-    this.usersRef.child(uid).child("likes/" + this.state.user.uid).set(this.state.user.displayName)
-      .catch(err => console.log(err));;
+    // this.usersRef.child(uid).child("likes/" + this.state.user.uid).set(this.state.user.displayName)
+    //   .catch(err => console.log(err));;
 
-    //Adding liked user to current user's list:
-    this.usersRef.child(this.state.user.uid).child("likes/" + uid).set(name)
-      .catch(err => console.log(err));;
+    // //Adding liked user to current user's list:
+    // this.usersRef.child(this.state.user.uid).child("likes/" + uid).set(name)
+    //   .catch(err => console.log(err));;
 
   }
 
@@ -175,56 +213,9 @@ class App extends Component {
 
   }
 
-  handleEdit(e) {
-    let card = e.parentElement;
-    let title = card.querySelector('h4').textContent;
-
-    let found = false;
-    Object.keys(this.state.userProfile.albums).map((key) => {
-      if (!found) {
-        if (this.state.userProfile.albums[key].collectionName === title) {
-          this.profileRef.child('albums/' + key).set(null);
-          found = true;
-        }
-      }
-    })
-
+  handleDelete(type, key) {
+    this.profileRef.child(type + '/' + key).set(null);
   }
-
-  // // Sends a new message to the desired conversation with the inputted text
-  // sendMessage() {
-  //   // TODO: add a new task and sen it to firebase
-  //   // TODO: if you don't see a task appearing, look at the console
-  //   //       and be sure to set up open security rules
-  //   //       https://info343.github.io/firebase.html#security-rules
-  //   let newSong = {
-  //     "wrapperType": "collection",
-  //     "collectionType": "Album",
-  //     "artistId": 271256,
-  //     "collectionId": 966997496,
-  //     "amgArtistId": 905792,
-  //     "artistName": "Drake",
-  //     "collectionName": "If You're Reading This It's Too Late",
-  //     "collectionCensoredName": "If You're Reading This It's Too Late",
-  //     "artistViewUrl": "https://itunes.apple.com/us/artist/drake/271256?uo=4",
-  //     "collectionViewUrl": "https://itunes.apple.com/us/album/if-youre-reading-this-its-too-late/966997496?uo=4",
-  //     "artworkUrl60": "http://is3.mzstatic.com/image/thumb/Music3/v4/ff/e3/8b/ffe38bc5-3ad5-3da5-1089-b467770ab617/source/60x60bb.jpg",
-  //     "artworkUrl100": "http://is3.mzstatic.com/image/thumb/Music3/v4/ff/e3/8b/ffe38bc5-3ad5-3da5-1089-b467770ab617/source/100x100bb.jpg",
-  //     "collectionPrice": 9.99,
-  //     "collectionExplicitness": "explicit",
-  //     "contentAdvisoryRating": "Explicit",
-  //     "trackCount": 17,
-  //     "copyright": "℗ 2015 Cash Money Records Inc.",
-  //     "country": "USA",
-  //     "currency": "USD",
-  //     "releaseDate": "2015-02-12T08:00:00Z",
-  //     "primaryGenreName": "Hip-Hop/Rap"
-  //   }
-  //   this.profileRef.child("albums").push(
-  //     newSong
-  //   )
-
-  // }
 
   // Used to toggle the navigation bar from the header 
   toggleNav() {
@@ -257,6 +248,40 @@ class App extends Component {
     }
   }
 
+  addItem(id, type) {
+
+    console.log(id);
+    console.log(type);
+
+    let url = "https://itunes.apple.com/lookup?id=" + id
+
+    let returnedPromise = fetch(url)  //start the download
+      .then(function (response) {  //when done downloading
+        let dataPromise = response.json();  //start encoding into an object
+        return dataPromise;  //hand this Promise up
+      })
+      .then((data) => {  //when done encoding
+        //do something with the data!!
+        console.log('done')
+        console.log(data.results)
+        if (type === "musicArtist") {
+          this.profileRef.child("artists").push(data.results[0]);
+        }
+        else if (type === "album") {
+          this.profileRef.child("albums").push(data.results[0]);
+        }
+        else if (type === "song") {
+          this.profileRef.child("songs").push(data.results[0]);
+        }
+
+      })
+      .catch(function (error) {
+        //do something if AJAX request fails
+        console.log(error);
+      })
+
+    return returnedPromise;
+  }
   //added from chat app
   sendMessage(messageText, conversationName) {
     // TODO: add a new task and sen it to firebase
@@ -371,7 +396,8 @@ class App extends Component {
             users={this.state.users}
             user={this.state.user}
             profile={this.state.userProfile}
-            handleEditCallback={(e) => this.handleEdit(e)} />
+            handleDeleteCallback={(key, type) => this.handleDelete(key, type)}
+            addItemCallback={(id, type) => this.addItem(id, type)} />
         </div>
       } else {
         return <Redirect to='/login' />
@@ -382,7 +408,12 @@ class App extends Component {
     //Added from chat app below
     let renderConversation = (routerProps) => {
 
-      if (this.state.user) {
+      if (this.state.user && this.state.users) {
+        // let userIds = (routerProps.match.params.convoName).split("+");
+        // console.log(this.state.user);
+        // let userName1 = this.state.users[userIds[0]]["name"];
+        // let userName2 = this.state.users[userIds[1]].name;
+
         return <div>
 
 
@@ -430,6 +461,8 @@ class App extends Component {
           user={this.state.user}
           conversationList=
           {<ConversationsList
+            user={this.state.user}
+            users={this.state.users}
             messages={this.state.messages}
             conversations={this.state.conversations}
             toggleCallback={() => this.toggleNav()} />}
@@ -468,13 +501,61 @@ class App extends Component {
   }
 }
 
+class SearchResults extends Component {
+  render() {
+    console.log(this.props.data);
+    if (this.props.data) {
+      let songArray = this.props.data;
+      let objects = [];
+
+      if (songArray.results.length == 0 || songArray.results == null) {
+        console.log("No results found");
+      } else {
+        let songArrayResult = songArray.results;
+
+        objects = Object.keys(songArrayResult).map((key) => {
+          let item = songArrayResult[key];
+          return <Card key={key} className="music_card">
+            {item.artworkUrl100 &&
+              <CardImg top src={item.artworkUrl100} alt="Card image cap" />}
+            {item.trackName &&
+              <CardTitle>{item.trackName}</CardTitle>}
+
+            {item.collectionName &&
+              <CardTitle>{item.collectionName}</CardTitle>}
+
+            <CardSubtitle>{item.artistName}</CardSubtitle>
+            {this.props.searchEntity === "musicArtist" &&
+              <Button color="success" onClick={(id, type) => this.props.addItemCallback(item.artistId, this.props.searchEntity)}>Add</Button>}
+            {this.props.searchEntity === "album" &&
+              <Button color="success" onClick={(id, type) => this.props.addItemCallback(item.collectionId, this.props.searchEntity)}>Add</Button>}
+            {this.props.searchEntity === "song" &&
+              <Button color="success" onClick={(id, type) => this.props.addItemCallback(item.trackId, this.props.searchEntity)}>Add</Button>}
+
+          </Card>
+        });
+      }
+
+      console.log(objects);
+      return (
+        <div id="records"> {objects} </div>
+      );
+    }
+    else {
+      return (
+        <div id="records"> </div>
+      );
+    }
+  }
+}
+
+
 class AddSong extends Component {
   constructor(props) {
     super(props);
     this.state = {
       searchValue: "",
-      results: [],
-      searchEntity: "musicArtist"
+      searchEntity: "musicArtist",
     };
   }
 
@@ -487,40 +568,16 @@ class AddSong extends Component {
         let dataPromise = response.json();  //start encoding into an object
         return dataPromise;  //hand this Promise up
       })
-      .then(function (data) {  //when done encoding
+      .then((data) => {  //when done encoding
         //do something with the data!!
         console.log('done')
-        console.log(data);
+        this.setState({ data: data });
 
-        let songArray = data;
-        document.querySelector('#records').innerHTML = '';
-        if (songArray.results.length == 0 || songArray.results == null) {
-          console.log("No results found");
-        } else {
-          let songArrayResult = songArray.results;
-
-          let objects = Object.keys(songArrayResult).map((key) => {
-            let item = songArrayResult[key];
-            return <Card key={key} className="music_card">
-              {item.artworkUrl100 &&
-                <CardImg top src={item.artworkUrl100} alt="Card image cap" />}
-              <CardTitle>{item.trackName}</CardTitle>
-              <CardSubtitle>{item.artistName}</CardSubtitle>
-              <Button color="success" onClick={() => console.log(item.artistId)}>Add</Button>
-            </Card>
-          });
-
-          let div = document.createElement('div');
-          ReactDOM.render(objects, document.querySelector("#records"));
-
-          console.log(div);
-
-          // let img = document.createElement('img');
-          // img.src = songObject.artworkUrl100;
-          // img.alt = songObject.trackName;
-          // img.title = songObject.trackName;
-          // document.querySelector('#records').append(img);
-        }
+        // ReactDOM.render(<SearchResults
+        //   data={data}
+        //   searchEntity={this.state.searchEntity}
+        //   addItemCallback={(id, type) => this.props.addItemCallback(id, type)}
+        //   searchEntity={this.state.searchEntity} />, document.querySelector("#records"));
 
       })
       .catch(function (error) {
@@ -530,28 +587,6 @@ class AddSong extends Component {
 
     return returnedPromise;
   }
-
-  renderSearchResults(songArray) {
-    document.querySelector('#records').innerHTML = '';
-    if (songArray.results.length == 0 || songArray.results == null) {
-      console.log("No results found");
-    } else {
-      let songArrayResult = songArray.results;
-
-      for (let song in songArrayResult) {
-        this.renderTrack(songArrayResult[song]);
-      }
-    }
-  }
-
-  renderTrack(songObject) {
-    let img = document.createElement('img');
-    img.src = songObject.artworkUrl100;
-    img.alt = songObject.trackName;
-    img.title = songObject.trackName;
-    document.querySelector('#records').append(img);
-  }
-
   handleEntityChange(term) {
     //edge case 
     if (term === "Artists") {
@@ -570,7 +605,7 @@ class AddSong extends Component {
       <div>
         <form className="form-inline" method="GET" action="https://itunes.apple.com/search">
           <div className="form-group mr-3">
-            <label htmlFor="searchQuery" className="mr-2">What do you want to hear?</label>
+            <label htmlFor="searchQuery" className="mr-2">What do you want to add?</label>
             <Input role="textbox" onChange={(event) => this.setState({ searchValue: event.target.value })} />
           </div>
           <FormGroup>
@@ -581,15 +616,17 @@ class AddSong extends Component {
               <option>Songs</option>
             </Input>
           </FormGroup>
-          <button type="submit" className="btn btn-primary" onClick={() => this.fetchTrackList(this.state.searchValue)}>
+          <button type="submit" className="btn btn-primary" onClick={(event) => {event.preventDefault(); this.fetchTrackList(this.state.searchValue)}}>
             <i className="fa fa-music" aria-hidden="true"></i> Search!
         </button>
         </form>
 
+        <SearchResults
+          data={this.state.data}
+          searchEntity={this.state.searchEntity}
+          addItemCallback={(id, type) => this.props.addItemCallback(id, type)}
+          searchEntity={this.state.searchEntity} />
 
-        <div id="records">
-          {this.state.results}
-        </div>
       </div>
 
     );
@@ -628,7 +665,10 @@ class EditPage extends Component {
               <CardImg top src={album.artworkUrl100} alt="Card image cap" />
               <CardTitle>{album.collectionName}</CardTitle>
               <CardSubtitle>{album.artistName}</CardSubtitle>
-              <Button style={{ display: "inline-block" }} onClick={(event) => this.props.handleEditCallback(event.target)}>
+              <Button
+                color="danger"
+                style={{ display: "inline-block" }}
+                onClick={() => this.props.handleDeleteCallback("albums", albumKey)}>
                 Delete
               </Button>
             </Card>
@@ -642,7 +682,10 @@ class EditPage extends Component {
               <CardImg top src={song.artworkUrl100} alt="Card image cap" />
               <CardTitle>{song.trackName}</CardTitle>
               <CardSubtitle>{song.artistName}</CardSubtitle>
-              <Button style={{ display: "inline-block" }} onClick={(event) => this.props.handleEditCallback(event.target)}>
+              <Button
+                color="danger"
+                style={{ display: "inline-block" }}
+                onClick={() => this.props.handleDeleteCallback("songs", songKey)}>
                 Delete
               </Button>
             </Card>
@@ -655,7 +698,10 @@ class EditPage extends Component {
             return <Card key={artistKey} className="edit_card">
               <CardTitle>{artist.artistName}</CardTitle>
               <CardSubtitle>{artist.primaryGenreName}</CardSubtitle>
-              <Button style={{ display: "inline-block" }} onClick={(event) => this.props.handleEditCallback(event.target)}>
+              <Button
+                color="danger"
+                style={{ display: "inline-block" }}
+                onClick={() => this.props.handleDeleteCallback("artists", artistKey)}>
                 Delete
               </Button>
             </Card>
@@ -676,21 +722,22 @@ class EditPage extends Component {
 
             <Row className="hundred_height" >
               <Col xs="12">
-                {this.state.rSelected + ":"}
 
                 <div className="outside-edit-container">
                   <div className="inside-edit-container">
                     {displayCollection}
                   </div>
-
                 </div>
+              </Col>
+            </Row>
 
+            <Row className="hundred_height" >
+              <Col xs="12">
                 <div className="outside-add-container">
                   <div className="inside-add-container">
-                    <AddSong />
+                    <AddSong addItemCallback={(id, type) => this.props.addItemCallback(id, type)} />
                   </div>
                 </div>
-
               </Col>
             </Row>
           </Container>
@@ -894,7 +941,7 @@ class MatchPage extends Component {
               matchedProfiles[currentProfile.uid] = newMatchProfile;
             }
 
-            console.log(matchedProfiles);
+            console.log("Matches: ", matchedProfiles);
           }
         });
       }
@@ -994,7 +1041,7 @@ class MatchedCard extends Component {
     }
 
     return (
-      <Card>
+      <Card id="display-card">
         <div className="img_container">
           {/* <CardImg top className="person_img" src={this.props.profile.img} alt="Card image cap" /> */}
 
@@ -1022,7 +1069,6 @@ class MatchedCard extends Component {
 
               <Row className="hundred_height" >
                 <Col xs="12">
-                  {this.state.rSelected + ":"}
 
                   <div className="container-outer">
                     <div className="container-inner">
@@ -1198,331 +1244,4 @@ new conversations, go back to home, or logout. */
 //   }
 // }
 
-// //added from chat app below
-// class ConversationsList extends Component {
-//   render() {
-
-//     //represents the list of conversations that will be constructed and returned 
-//     let conversationsList;
-
-//     if (this.props.conversations) {
-//       //iterate through the conversations prop and create a conversation card for each
-//       if (Object.keys(this.props.conversations).length > 0) {
-//         conversationsList = Object.keys(this.props.conversations).map((convo) => {
-
-//           return <ConversationCard
-//             key={convo}
-//             title={convo}
-//             subtitle={"Last Message: '" + this.props.conversations[convo].lastMessage.text + "' -" + this.props.conversations[convo].lastMessage.displayName}
-//             text={"# of Messages: " + this.props.conversations[convo].messages}
-//             reroute={"/conversations/" + convo}
-//             toggleCallback={() => this.props.toggleCallback()} />
-//         });
-//         //if there is no conversations passed, make the default "general" conversation card  
-//       } else {
-//         conversationsList = <ConversationCard
-//           key={"general"}
-//           title={"general"}
-//           subtitle="fill this"
-//           text="fill this"
-//           reroute={"/conversations/general"}
-//           toggleCallback={() => this.props.toggleCallback()} />
-//       }
-//     }
-
-//     return (
-//       <div
-//         className="conversations-list"
-//         role="region"
-//         aria-live="polite">
-//         {conversationsList}
-//       </div>
-//     );
-//   }
-// }
-
-// //added from chat app below
-// class ConversationCard extends Component {
-//   render() {
-
-//     return (
-//       <div>
-//         <Card className="convo-card">
-//           <CardBody>
-//             <CardTitle aria-label="conversation title">{this.props.title}</CardTitle>
-//             <CardSubtitle aria-label="last message">{this.props.subtitle}</CardSubtitle>
-//             <CardText aria-label="number of messages">{this.props.text}</CardText>
-//             <Link aria-label="go to conversation" to={this.props.reroute}>
-//               <Button role="button" color="info" onClick={() => this.props.toggleCallback()}>
-//                 Go
-//               </Button>
-//             </Link>
-//           </CardBody>
-//         </Card>
-//       </div>
-//     );
-//   }
-// }
-
-// //added from chat app below
-// class MessagesList extends Component {
-//   render() {
-
-//     // List of messages that will be constructed with multiple message cards for this conversation
-//     let messageList;
-
-//     if (this.props.messages[this.props.conversationName]) {
-
-//       messageList = Object.keys(this.props.messages[this.props.conversationName]).map((msgkey) => {
-//         let msg = this.props.messages[this.props.conversationName][msgkey];
-//         return <MessageCard
-//           key={msgkey}
-//           author={msg.author}
-//           displayName={msg.displayName}
-//           photoURL={msg.photoURL}
-//           text={msg.text}
-//           timestamp={msg.timestamp} />
-//       });
-//     }
-
-//     return (
-//       <div className="container-fluid">
-//         <div className="row">
-//           <h1> {this.props.conversationName} </h1>
-//         </div>
-
-//         <div className="row">
-//           <div className="col-12" >
-//             <div
-//               className="messages-list"
-//               role="region"
-//               aria-live="polite">
-//               {messageList && messageList.length > 0 &&
-//                 messageList}
-//               { // incase there are no messages in this conversation
-//                 !messageList &&
-//                 <p className="alert alert-info">No Messages Available</p>}
-//             </div>
-//           </div>
-//         </div>
-
-//         <div className="row">
-//           <div className="col-12">
-//             <SendMessageForm
-//               submitCallback={(messageText, conversationName) => { this.props.sendMessageCallback(messageText, conversationName) }}
-//               conversationName={this.props.conversationName} />
-//           </div>
-//         </div>
-//       </div>
-
-//     );
-//   }
-// }
-
-// //added from chat app below
-// // Shows a specific message that includes the display name, picture, text, and time sent
-// class MessageCard extends Component {
-//   render() {
-
-//     // Using Remarkable's library to render Markdown in messages
-//     let md = new Remarkable({
-//       linkify: true,
-//       link_open: function (tokens, idx /*, options, env */) {
-//         var title = tokens[idx].title ? (' title="' + this.escapeHtml(this.replaceEntities(tokens[idx].title)) + '"') : '';
-//         return '<a target="_blank" href="' + this.escapeHtml(tokens[idx].href) + '"' + title + '>';
-//       }
-//     });
-
-//     return (
-//       <Card className="message-card">
-//         <CardBody>
-//           <CardTitle aria-label="sender information">
-//             <img className="avatar-mini" src={this.props.photoURL} alt={this.props.displayName} />
-//             {this.props.displayName}</CardTitle>
-//           <CardSubtitle className="message-time" aria-label="message sent time">
-//             {new Date(this.props.timestamp).toLocaleString()}
-//           </CardSubtitle>
-//           <CardText className="message-text" aria-label="message text">{renderHTML(md.render(this.props.text))}</CardText>
-//         </CardBody>
-//       </Card>
-//     );
-//   }
-// }
-
-// //added from chat app below
-// // Form used to input and send new messages to conversations, 
-// class SendMessageForm extends Component {
-//   constructor(props) {
-//     super(props);
-//     this.state = { value: '' }; //initial state
-//   }
-
-//   // Appropriately addressing change for the input box
-//   handleChange(event) {
-//     let storageKey = this.props.conversationName + "_draft";
-//     this.setState({ value: event.target.value });
-//     localStorage.setItem(storageKey, event.target.value);
-//   }
-
-//   // Callback for when the submit button is clicked 
-//   handleClick(event) {
-//     event.preventDefault();
-//     let storageKey = this.props.conversationName + "_draft";
-//     this.props.submitCallback(this.state.value, this.props.conversationName);
-//     this.setState({ value: '' }); //reset once finished
-//     localStorage.setItem(storageKey, event.target.value);
-//   }
-
-//   // Used to updated value with the local storage to mimick a draft 
-//   updateValue() {
-//     let storageKey = this.props.conversationName + "_draft";
-//     this.setState({ value: localStorage.getItem(storageKey) });
-//   }
-
-//   render() {
-//     let storageKey = this.props.conversationName + "_draft";
-//     let fieldValue = this.state.value;
-
-//     if (fieldValue !== localStorage.getItem(storageKey) && localStorage.getItem(storageKey) !== null) {
-//       fieldValue = localStorage.getItem(storageKey);
-//       this.updateValue();
-//     }
-
-//     return (
-//       <form>
-//         <div className="container" />
-//         <div className="row align-items-start">
-//           <div className="col-9">
-//             <Input
-//               role="textbox"
-//               className="form-control mb-3"
-//               placeholder="Message"
-//               value={fieldValue}
-//               onChange={(event) => { this.handleChange(event) }}
-//             />
-//           </div>
-
-//           <div className="col-3">
-//             <Button
-//               role="button"
-//               color="primary"
-//               className="mt-0"
-//               onClick={(event) => { this.handleClick(event) }}>
-//               Send
-//             </Button>
-//           </div>
-//         </div>
-//       </form>
-//     );
-//   }
-// }
-
-// class NavDrawer extends Component {
-//   constructor(props) {
-//     super(props);
-
-//     this.state = {
-//       modal: false,
-//       newConvoValue: ''
-//     };
-
-//     this.toggleModal = this.toggleModal.bind(this);
-//   }
-
-//   // Used to toggle the popup modal that prompts for a new conversation
-//   toggleModal() {
-//     this.setState({
-//       modal: !this.state.modal,
-//       backdrop: true
-//     });
-//   }
-
-//   // Callback for when user is inputting a name of a new conversation
-//   handleChange(event) {
-//     this.setState({ newConvoValue: event.target.value });
-//   }
-
-//   render() {
-
-//     return (
-//       <MuiThemeProvider>
-//         <div>
-//           <Drawer
-//             className="drawer"
-//             open={this.props.open}
-//           >
-//             <AppBar
-//               title="Conversations"
-//               iconElementLeft={<IconButton role="button"><NavigationClose /></IconButton>}
-//               onLeftIconButtonTouchTap={() => this.props.toggleCallback()}
-//             />
-
-//             { // Prompt user to log in if they are not
-//               !this.props.user &&
-//               <p className="alert alert-info">Please Log In First!</p>}
-
-//             { //Content shown when logged in
-//               this.props.user &&
-//               <div>
-//                 <div>
-//                   {this.props.conversationList}
-
-//                   <Button
-//                     role="button"
-//                     color="info"
-//                     id="newConvoPopover"
-//                     onClick={() => { this.props.toggleCallback(); this.toggleModal() }}>
-//                     New Conversation
-//                 </Button>
-
-//                   <Modal
-//                     aria-label="new conversation modal"
-//                     isOpen={this.state.modal}
-//                     toggle={this.toggle} className="modal-popover">
-//                     <ModalHeader aria-label="make new conversation">New Conversation</ModalHeader>
-//                     <ModalBody>
-//                       Please enter the name of your new conversation:
-//                     <Input role="textbox" onChange={(event) => this.handleChange(event)} />
-//                     </ModalBody>
-//                     <ModalFooter>
-//                       <Link to={"/conversations/" + this.state.newConvoValue}>
-//                         <Button role="button" color="primary" onClick={() => this.toggleModal()}>
-//                           Create
-//                       </Button>
-//                       </Link>
-
-//                       <Button role="button" color="secondary" onClick={() => this.toggleModal()}>
-//                         Cancel
-//                       </Button>
-//                     </ModalFooter>
-//                   </Modal>
-//                 </div>
-
-//                 <div>
-//                   <Link to="/conversations">
-//                     <Button
-//                       role="button"
-//                       color="info"
-//                       onClick={() => this.props.toggleCallback()}>
-//                       Home
-//                   </Button>
-//                   </Link>
-
-//                   <Link to="/">
-//                     <Button
-//                       role="button"
-//                       color="warning"
-//                       onClick={() => this.props.signOutCallback()}>
-//                       Log Out
-//                   </Button>
-//                   </Link>
-//                 </div>
-//               </div>
-//             }
-//           </Drawer>
-//         </div>
-//       </MuiThemeProvider>
-//     );
-//   }
-// }
 export default App;

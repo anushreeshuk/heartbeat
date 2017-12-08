@@ -118,8 +118,7 @@ button.btn.btn-primary.active{
 
 .outside-edit-container {
   overflow: scroll; 
-  width: 300px; 
-  width:100%;
+  width: 375px; 
   display: inline-block;
 }
 
@@ -228,4 +227,75 @@ button > img{
 
 .music_card {
   margin-bottom: 10px;
+}
+
+.carousel-caption > p {
+  display: none;
+}
+
+@media(min-width: 768px){
+
+  .card{
+    display: flex;
+    flex-wrap: wrap;
+    width: 100px;
+  }
+
+  .music_card.card, .edit_card.card{
+    width: 100px;
+  }
+
+  #display-card{
+    height: 550px;
+    width: 100%;
+    margin-top: 30px;
+  }
+
+  .img_container{
+    margin-top: 100px;
+    margin-left: 20px;
+    margin-right: 30px;
+    width: 50%;
+    height: auto;
+  }
+  
+  .card-body{
+    width: 50%;
+  }
+
+  .container-outer{
+    height: 233px;
+    width: 400px;
+  }
+
+  #root > .hundred_height > .container{
+    padding: 0px;
+    margin: 0px;
+    max-width: 10000px;
+  }
+
+  #display-card > .card-body > .card-title{
+    font-size: 30pt;
+
+  }
+
+  .card-subtitle{
+    font-size: 14pt;
+  }
+
+  #records{
+    max-width: 700px;
+    min-width: 600px;
+  }
+  .outside-edit-container{
+    width: 600px;
+  }
+
+  button > img:hover{
+    width: 90%;
+  }
+
+  .btn-group{
+    margin-bottom: 10px;
+  }
 }
