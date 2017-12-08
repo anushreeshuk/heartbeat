@@ -150,10 +150,10 @@ class App extends Component {
         if (this.state.userLikes[this.state.user.uid][key]["likedBack"]) {
           console.log("Mutual match with " + this.state.users[key]["name"]);
           let newConvo = {
-            'name': this.state.user.displayName + ' + ' +  this.state.users[key]["name"],
+            'name': this.state.user.displayName + '+' +  this.state.users[key]["name"],
             'userId1': this.state.user.uid,
             'username1': this.state.user.displayName ,
-            'userId2': uid,
+            'userId2': key,
             'username2': this.state.users[key]["name"],
             'lastMessage': "none",
             'lastUser': "none",
