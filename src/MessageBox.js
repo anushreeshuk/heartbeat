@@ -61,14 +61,14 @@ export class MessageBox extends Component {
       firebase.database().ref('conversations').once('value').then(function (snapshot) {
         let y = snapshot.val()[id].messages;
         let x = firebase.database().ref('conversations/' + id1);
-        x.update({ messages: y + 1 });
+        x.update({lastMessage: newMessage.text, lastUser:newMessage.userName, messages: y + 1 });
       });;
       id = convo.id;
     }
     firebase.database().ref('conversations').once('value').then(function (snapshot) {
       let y = snapshot.val()[id].messages;
       let x = firebase.database().ref('conversations/' + id);
-      x.update({ messages: y + 1 });
+      x.update({lastMessage: newMessage.text, lastUser:newMessage.userName,  messages: y + 1 });
     });;
     localStorage.setItem(this.props.name, '');
     this.setState({ post: '' }); //empty out post for next time

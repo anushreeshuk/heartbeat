@@ -12,7 +12,7 @@ import _ from 'lodash';
 class AddConvo extends Component {
     constructor(props) {
         super(props);
-        this.state = { 'name': '', 'userId': '', 'username1': '', 'username2': '', 'userId2': '' };
+        this.state = { 'name': '', 'userId': '', 'username1': '', 'username2': '', 'userId2': '' , 'lastMessage': '', 'lastUser': ''};
     }
 
     handleCreate(event) {
@@ -22,12 +22,16 @@ class AddConvo extends Component {
         let username1 = this.state.username1;
         let username2 = this.state.username2;
         let userId2 = this.state.userId2;
+        let lastMessage = this.state.lastMessage;
+        let lastUser = this.state.lastUser;
         let newConvo = {
             'name': name,
             'userId1': userId1,
             'username1': username1,
             'username2': username2,
             'userId2': userId2,
+            'lastMessage': lastMessage,
+            'lastUser': lastUser,
             'messages': 0
         };
         let conversations = firebase.database().ref('conversations');
@@ -56,6 +60,8 @@ class AddConvo extends Component {
         newState['userId1'] = this.props.user.uid;
         newState['username1'] = this.props.user.displayName;
         newState['username2'] = event.target.value;
+        newState['lastMessage'] = 'none';
+        newState['lastUser'] = 'none';
         newState['userId2'] = _.find(users, { 'username': event.target.value })
             ? _.find(users, { 'username': event.target.value }).userId : '';
         this.setState(newState);
@@ -95,11 +101,13 @@ class Invite extends Component {
     }
 
     render() {
-        let users = Object.keys(this.state.users).map(obj => this.state.users[obj]["id"] = obj);
-        users = Object.keys(this.state.users).map(obj => this.state.users[obj]);
-        let options = users.map((user) => {
-            if (user.userId != this.props.user.uid) {
-                return <User invitedUser={user} key={user.username} />
+        // let users = Object.keys(this.state.users).map(obj => this.state.users[obj]["id"] = obj);
+        // users = Object.keys(this.state.users).map(obj => this.state.users[obj]);
+        let users = this.state.users;
+        console.log(users);
+        let options = Object.keys(users).map((user) => {
+            if (users[user].uid != this.props.user.uid) {
+                return <User invitedUser={users[user]} key={users[user].name} />
             }
         })
         return (
@@ -119,7 +127,7 @@ class User extends Component {
     }
     render() {
         return (
-            <option>{this.props.invitedUser.username}</option>
+            <option>{this.props.invitedUser.name}</option>
         );
     }
 }

@@ -107,11 +107,6 @@ class App extends Component {
         }
       })
 
-      this.messagesRef = firebase.database().ref("messages");
-      this.messagesRef.on("value", (snapshot) => {
-        this.setState({ messages: snapshot.val() });
-      })
-
       this.userLikesRef = firebase.database().ref("userLikes");
       this.userLikesRef.on("value", (snapshot) => {
         this.setState({ userLikes: snapshot.val() });
@@ -125,12 +120,12 @@ class App extends Component {
   // Make sure to turn off our listeners when the component is unmounting from the page
   componentWillUnmount() {
     this.authUnRegFunc();
-    // this.usersRef.off();
-    // // this.profileRef.off();
+    this.usersRef.off();
+    this.profileRef.off();
 
     // //added from chat app below
     // // this.messagesRef.off();
-    // this.convoRef.off();
+    this.convoRef.off();
   }
 
   handleLike(uid, name) {
@@ -151,11 +146,18 @@ class App extends Component {
       Object.keys(this.state.userLikes[this.state.user.uid]).map((key) => {
         if (this.state.userLikes[this.state.user.uid][key]["likedBack"]) {
           console.log("Mutual match with " + this.state.users[key]["name"]);
-          this.convoRef.child(this.state.user.uid + "+" + key).set({
-            members: [this.state.user.uid, key],
-            lastMessage: "No Messages",
-            messages: 0
-          })
+          let newConvo = {
+            'name': this.state.user.displayName + ' + ' +  this.state.users[key]["name"],
+            'userId1': this.state.user.uid,
+            'username1': this.state.user.displayName ,
+            'userId2': uid,
+            'username2': this.state.users[key]["name"],
+            'lastMessage': "none",
+            'lastUser': "none",
+            'messages': 0
+          };
+          
+          this.convoRef.push(newConvo);
         }
       })
 
@@ -435,15 +437,6 @@ class App extends Component {
             toggleNavCallback={() => this.toggleNav()}
             toggleFilterCallback={() => this.toggleFilter()}
           />
-          {/* 
-          <MessagesList
-
-            messages={this.state.messages}
-            sendMessageCallback={
-              (messageText, conversationName) => this.sendMessage(messageText, conversationName)
-            }
-            conversationName={routerProps.match.params.convoName} /> */}
-
           <ChatRoom
             {...routerProps}
             user={this.state.user}
@@ -463,8 +456,7 @@ class App extends Component {
         <Switch>
           <Route exact path='/' render={renderMatchPage} />
           <Route exact path='/conversations' render={(routerProps) => (
-            <ConvoList {...routerProps} conversations={conversations} login={this.state.login}
-              currentUser={this.state.user} />)} />
+            <Redirect to="/" />)} />
           <Route exact path='/login' render={renderSignIn} />
           <Route exact path='/join' render={renderSignUp} />
           <Route exact path='/edit' render={renderEdit} />
@@ -472,8 +464,7 @@ class App extends Component {
             <AddConvo {...routerProps} convoArray={conversations} user={this.state.user} />)} />
 
           {/* Added from chat app below*/}
-          <Route path='/conversations/:Id' render={(routerProps) => (
-            <ChatRoom {...routerProps} user={this.state.user} conversations={conversations} />)} />
+          <Route path='/conversations/:Id' render={renderConversation} />
 
         </Switch>
 
@@ -488,7 +479,7 @@ class App extends Component {
             user={this.state.user}
             users={this.state.users}
             messages={this.state.messages}
-            conversations={this.state.conversations}
+            conversations={conversations}
             toggleCallback={() => this.toggleNav()} />}
           signOutCallback={() => this.handleSignOut()}
           sendMessageCallback={(name) => this.sendMessage()} />
