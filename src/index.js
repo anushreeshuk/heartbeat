@@ -25,7 +25,7 @@ var config = {
     projectId: "test-heartbeat-c4718",
     storageBucket: "test-heartbeat-c4718.appspot.com",
     messagingSenderId: "895606864826"
-};
+  };
 
 firebase.initializeApp(config);
 

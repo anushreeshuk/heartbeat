@@ -104,8 +104,8 @@ class Invite extends Component {
         })
         return (
             <Input type="select" name="name" id="select" placeholder="other username" onClick={(e) =>
-                this.props.handleChangeCallback(e, users)} valid={this.props.valid}>
-                <option selected="true">Choose</option>
+                this.props.handleChangeCallback(e, users)}>
+                <option>Choose</option>
                 {options}
             </Input>
         );

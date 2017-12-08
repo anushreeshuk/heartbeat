@@ -71,9 +71,6 @@ class App extends Component {
       ageRange: [0, 100],
     };
 
-    this.conversations = Object.keys(this.state.conversations).map(obj => this.state.conversations[obj]["id"] = obj);
-    this.conversations = Object.keys(this.state.conversations).map(obj => this.state.conversations[obj]);
-
   }
 
   // Initialize firebase authentication and database functionality on component mount
@@ -81,7 +78,7 @@ class App extends Component {
 
     this.authUnRegFunc = firebase.auth().onAuthStateChanged((firebaseUser) => {
       if (firebaseUser) { //someone logged in
-        this.setState({ user: firebaseUser, loading: false, login: true});
+        this.setState({ user: firebaseUser, loading: false, login: true });
       }
       else { //someone logged out 
         this.setState({ user: null, userProfile: null, loading: false, login: false });
@@ -190,6 +187,8 @@ class App extends Component {
     firebase.auth()
       .createUserWithEmailAndPassword(email, password)
       .then((firebaseUser) => {
+        let users = firebase.database().ref('users');
+        users.push({ 'userId': firebaseUser.uid, 'username': handle });
         let promise = firebaseUser.updateProfile({ displayName: handle, photoURL: gravatarImg })
         return promise;
       })
@@ -326,6 +325,8 @@ class App extends Component {
 
   render() {
     let content = null; //content to render
+    let conversations = Object.keys(this.state.conversations).map(obj => this.state.conversations[obj]["id"] = obj);
+    conversations = Object.keys(this.state.conversations).map(obj => this.state.conversations[obj]);
 
     // Rendering content for when the route is signing up
     let renderSignUp = (routerProps) => {
@@ -393,8 +394,8 @@ class App extends Component {
 
     };
 
-    let renderEdit = (routerProps) => {
 
+    let renderEdit = (routerProps) => {
       if (this.state.user) {
         return <div className="hundred_height">
           <TopHeader
@@ -446,7 +447,7 @@ class App extends Component {
           <ChatRoom
             {...routerProps}
             user={this.state.user}
-            conversations={this.conversations}
+            conversations={conversations}
           />
         </div>
       } else {
@@ -461,19 +462,18 @@ class App extends Component {
 
         <Switch>
           <Route exact path='/' render={renderMatchPage} />
-          <Route exact path='/conversations' render={(routerProps) => {
-
-            <ConvoList {...routerProps} conversations={this.conversations} login={this.state.login}
-              currentUser={this.state.user} />
-          }} />
+          <Route exact path='/conversations' render={(routerProps) => (
+            <ConvoList {...routerProps} conversations={conversations} login={this.state.login}
+              currentUser={this.state.user} />)} />
           <Route exact path='/login' render={renderSignIn} />
           <Route exact path='/join' render={renderSignUp} />
           <Route exact path='/edit' render={renderEdit} />
           <Route path='/add' render={(routerProps) => (
-            <AddConvo {...routerProps} convoArray={this.conversations} user={this.state.user} />)} />
+            <AddConvo {...routerProps} convoArray={conversations} user={this.state.user} />)} />
 
           {/* Added from chat app below*/}
-          <Route exact path='/conversations/:convoName' render={renderConversation} />
+          <Route path='/conversations/:Id' render={(routerProps) => (
+            <ChatRoom {...routerProps} user={this.state.user} conversations={conversations} />)} />
 
         </Switch>
 
