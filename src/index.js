@@ -9,14 +9,24 @@ import 'firebase/auth';
 import 'firebase/database'
 
 // Initialize Firebase
+// var config = {
+//     apiKey: "AIzaSyAInUGOhRpMqohXYMEbFt2km-_AWZ_kBoI",
+//     authDomain: "group-proj-dev.firebaseapp.com",
+//     databaseURL: "https://group-proj-dev.firebaseio.com",
+//     projectId: "group-proj-dev",
+//     storageBucket: "group-proj-dev.appspot.com",
+//     messagingSenderId: "538194400345"
+// };
+
 var config = {
-    apiKey: "AIzaSyAInUGOhRpMqohXYMEbFt2km-_AWZ_kBoI",
-    authDomain: "group-proj-dev.firebaseapp.com",
-    databaseURL: "https://group-proj-dev.firebaseio.com",
-    projectId: "group-proj-dev",
-    storageBucket: "group-proj-dev.appspot.com",
-    messagingSenderId: "538194400345"
+    apiKey: "AIzaSyC8SiJmYeouFXdFNfzTqEVq-Oy6ax8fUS0",
+    authDomain: "test-heartbeat-c4718.firebaseapp.com",
+    databaseURL: "https://test-heartbeat-c4718.firebaseio.com",
+    projectId: "test-heartbeat-c4718",
+    storageBucket: "test-heartbeat-c4718.appspot.com",
+    messagingSenderId: "895606864826"
 };
+
 firebase.initializeApp(config);
 
 ReactDOM.render(<BrowserRouter basename={process.env.PUBLIC_URL + '/'}><App /></BrowserRouter>, document.getElementById('root'));
