@@ -1,14 +1,8 @@
 import React, { Component } from 'react'; //import React Component
+import { FormFeedback, Alert, FormGroup, Label, Input, Button } from 'reactstrap'
+import { Redirect } from 'react-router-dom'
 
-import './SignUp.css'; //load module CSS
-import noUserPic from './img/no-user-pic.png'; //placeholder image (as a data Uri)
-import { Button } from 'reactstrap';
-import { Label } from 'reactstrap';
-import { Input } from 'reactstrap';
-import { FormGroup } from 'reactstrap';
-import { Alert } from 'reactstrap';
-import { FormFeedback } from 'reactstrap';
-
+// Form used to log in the user with their credentials
 class SignInForm extends Component {
   constructor(props) {
     super(props);
@@ -18,12 +12,23 @@ class SignInForm extends Component {
     }; //initialize state
   }
 
-  //handle signIn button
+  // Callback for the sign in button 
   handleSignIn(event) {
     event.preventDefault(); //don't submit
     this.props.signInCallback(this.state.email, this.state.password);
   }
-  
+
+  // Handles input from the user in a text field
+  handleChange(event) {
+    this.setState({ [event.target.name]: event.target.value });
+  }
+
+  /**
+   * A helper function to validate a value based on an object of validations
+   * Second parameter has format e.g., 
+   *    {required: true, minLength: 5, email: true}
+   * (for required field, with min length of 5, and valid email)
+   */
   validate(value, validations) {
     let errors = [];
 
@@ -52,85 +57,83 @@ class SignInForm extends Component {
     return undefined; //no errors defined (because no value defined!)
   }
 
-  handleChange(event) {
-    let newState = {};
-    newState[event.target.name] = event.target.value;
-    this.setState(newState);
-  }
 
   /* SignUpForm#render() */
   render() {
     let emailErrors = this.validate(this.state.email, { required: true, email: true });
-    let emailValid = emailErrors ? (emailErrors.length == 0 ? true : false) : undefined;
     let passwordErrors = this.validate(this.state.password, { required: true, minLength: 6 });
-    let passwordValid = passwordErrors ? (passwordErrors.length == 0 ? true : false) : undefined;
-    let emailFeedback = emailErrors ? emailErrors.map((error) => <FormFeedback>{error}</FormFeedback>) : '';
-    let passwordFeedback = passwordErrors ? passwordErrors.map((error) => <FormFeedback>{error}</FormFeedback>) : '';
-    return (
-      <form>
+    let handleErrors = this.validate(this.state.handle, { required: true });
 
-        {/* email */}
-        <FormGroup aria-label="form" aria-required="true">
-          <Label for="email">Email</Label>
-          <Input onChange={(e) => this.handleChange(e)}
-            id="email"
-            type="email"
-            name="email"
-            valid={emailValid}
-          />
-          {emailErrors && emailErrors.map((error) => <FormFeedback key={error}>{error}</FormFeedback>)}
-        </FormGroup>
-        <FormGroup aria-label="form" aria-required="true">
-          <Label for="password">Password</Label>
-          <Input onChange={(e) => this.handleChange(e)}
-            id="password"
-            type="password"
-            name="password"
-            valid={passwordValid}
-          />
-          {passwordErrors && passwordErrors.map((error) => <FormFeedback key={error}>{error}</FormFeedback>)}
-        </FormGroup>
-        <FormGroup aria-label="form" aria-required="true">
-            <Button color="primary" onClick={(e) => this.handleSignIn(e)}
-                disabled={emailValid && passwordValid ? false : true} >
-                Sign-in
-            </Button>
-        </FormGroup>
-      </form>
-    )
-  }
-}
-
-//A simple component that displays the form, with alert callbacks
-class SignInApp extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {};
-  }
-
-  handleSignIn(email, password) {
-    this.setState({ alert: `Signing in: '${email}'` });
-  }
-
-  render() {
-    let alert = this.state.alert;
-    let display = null;
-    if (alert != undefined) {
-      display = <Alert color="success">{alert}</Alert>;
-    } else {
-      display = <SignInForm
-        signInCallback={(e, p) => this.handleSignIn(e, p)} />;
+    function isValid(arr) {
+      if (arr) {
+        if (arr.length > 0) {
+          return false;
+        } else {
+          return true
+        }
+      } else {
+        return undefined;
+      }
     }
-    return (
-      <div className="container">
-        <header>
-          <h1>Sign Up!</h1>
-        </header>
-        {display}
-      </div>
-    );
+
+    // Boolean values for valid input
+    let emailValid = isValid(emailErrors);
+    let passwordValid = isValid(passwordErrors);
+
+    // Only show if user is NOT logged in
+    if (!this.props.user) {
+      return (
+        <form>
+
+          {/* email */}
+          <FormGroup>
+            <Label for="email">Email</Label>
+            <Input
+              role="textbox"
+              id="email"
+              type="email"
+              name="email"
+              onChange={(event) => this.handleChange(event)}
+              valid={emailValid}
+            />
+            {emailErrors && emailErrors.length > 0 &&
+              emailErrors.map((err) => <FormFeedback key={err}>{err}</FormFeedback>)
+            }
+          </FormGroup>
+
+          {/* password */}
+          <FormGroup>
+            <Label for="password">Password</Label>
+            <Input
+              role="textbox"
+              id="password"
+              type="password"
+              name="password"
+              onChange={(event) => this.handleChange(event)}
+              valid={passwordValid}
+            />
+            {passwordErrors && passwordErrors.length > 0 &&
+              passwordErrors.map((err) => <FormFeedback key={err}>{err}</FormFeedback>)
+            }
+          </FormGroup>
+
+          {/* buttons */}
+          <FormGroup>
+            <Button
+              role="button"
+              disabled={!emailValid || !passwordValid} color="success" onClick={(e) => this.handleSignIn(e)} >
+              Sign-in
+          </Button>
+          </FormGroup>
+
+        </form>
+      )
+    }
+    // Redirect if user is logged in
+    else {
+      return <Redirect to='/' />
+    }
   }
 }
 
-export default SignInForm; 
-
+export default SignInForm; //the default export

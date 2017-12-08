@@ -1,35 +1,301 @@
-header.jumbotron {
-    background-color: #2A2280;
-    color: white;
-    text-align: center;
+.App, #filter_outer_container, .center-outer-div{
+  text-align: center;
+}
+
+.App-logo {
+  animation: App-logo-spin infinite 20s linear;
+  height: 80px;
+}
+
+.App-header {
+  background-color: #222;
+  height: 150px;
+  padding: 20px;
+  color: white;
+}
+
+.App-title {
+  font-size: 1.5em;
+}
+
+.App-intro {
+  font-size: large;
+}
+
+@keyframes App-logo-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+html, body
+{
+    height: 100%;
+}
+
+.card{
+  height: 100%;
+  margin: 0;
+}
+
+#root > .hundred_height > .container{
+  padding: 0px;
+}
+
+.container{
+  height: 94%;
+}
+
+#root{
+  height: 100%
+}
+
+.hundred_height{
+  height: 100%
+}
+
+#root:first-child{
+  height:100%
+}
+
+.card_container{
+  height: 100%
+}
+
+.card_container_item{
+  height: 33%;
+  padding-bottom: 5px;
+  padding-top: 5px;
+}
+
+.card_inner_content{
+  height: 70%;
+  text-align: center;
+}
+
+.music_card, .edit_card{
+  width: 100px;
+  height: auto;
+  padding: 5px;
+  margin-right: 7.5px;
+  margin-left: 7.5px;
+  flex: 0 0 auto;
+}
+
+.music_card > .card-title, .edit_card > .card-title{
+  font-size: 1rem;
+}
+
+.music_card > .card-subtitle, .edit_card > .card-subtitle{
+  font-size: .8rem;
+}
+
+.btn-group {
+  padding: 10px;
+  display: inline-block;
+}
+
+.btn-group > .btn{
+  font-size: 10pt;
+  background-color: white;
+  color: rgb(0, 188, 212);
+}
+
+button.btn.btn-primary.active{
+  background-color: rgb(0, 188, 212) !important
+}
+
+.btn-primary{
+  border-color: rgb(0, 188, 212) !important;
+}
+
+.container-outer{ 
+  overflow: scroll; 
+  width: 300px; 
+  height: 210px; 
+  width:100%;
+  display: inline-block;
+}
+
+.outside-edit-container {
+  overflow: scroll; 
+  width: 375px; 
+  display: inline-block;
+}
+
+.container-inner, .inside-edit-container{ 
+  overflow: scroll;
+  display: flex; 
+  flex-wrap: nowrap;
+  overflow-x: auto;
+
+}
+
+.col-12{
+  padding-left:0px;
+  padding-right:0px;
+}
+
+.action_buttons, #filter_inner_container, .center-inner-div{
+  display: inline-block;
+}
+
+.action_buttons > .btn.btn-link{
+  margin-right: 25px;
+  margin-left: 25px;
+}
+
+button > img{
+  width:75%;
+}
+
+.person_img{
+  min-height: 100%;
+}
+
+.img_container{
+  overflow: hidden;
+  height:250px;
+  width:100%;
+}
+
+.centered {
+  position: fixed;
+  top: 25%;
+  left: 50%;
+  width: 100px;
+  height: 100px;
+  /* bring your own prefixes */
+  transform: translate(-50%, -50%);
+}
+
+#age_filter_container{
+  float: left;
+}
+
+.filter_label{
+  font-weight: bold;
+}
+
+.secondary_text{
+  color: grey;
+  font-style: italic;
+}
+
+#filter_outer_container > div > div {
+  height: 250px;
+  border-radius: 15px
+}
+
+.records {
+  display: flex; /* flexbox for wrapping */
+  flex-wrap: wrap;
+  margin-bottom: 1em;
+}
+
+#records{
+  display: inline-flex;
+  flex-wrap: wrap;
+  width: 380px;
+  margin-top: 10px;
+}
+
+#records > img {
+  margin: 5px;
+  width: 75px;
+  height: 75px;
+  border-radius:50%;
+  cursor: pointer; /* so looks clickable! */
+}
+
+.outside-add-container{
+  text-align: center;
+  margin-top: 15px;
+}
+
+.inside-add-container{
+  display: inline-block;
+
+}
+
+.form-inline{
+  display: inline-flex;
+}
+
+.music_card > button, .edit_card > button{
+  margin-top: 10px;
+}
+
+.music_card {
+  margin-bottom: 10px;
+}
+
+.carousel-caption > p {
+  display: none;
+}
+
+@media(min-width: 768px){
+
+  .card{
+    display: flex;
+    flex-wrap: wrap;
+    width: 100px;
+  }
+
+  .music_card.card, .edit_card.card{
+    width: 100px;
+  }
+
+  #display-card{
+    height: 550px;
+    width: 100%;
+    margin-top: 30px;
+  }
+
+  .img_container{
+    margin-top: 100px;
+    margin-left: 20px;
+    margin-right: 30px;
+    width: 50%;
+    height: auto;
   }
   
-  header.jumbotron a, header.jumbotron a:hover {
-    color: white;
-    text-align: center;
+  .card-body{
+    width: 50%;
   }
-  
-  .nav {
-    margin-bottom: 2em; 
-    padding: 1em;  
+
+  .container-outer{
+    height: 233px;
+    width: 400px;
   }
-  
-  nav h2 {
-    font-size: 1.25rem;
-    text-align: center;
+
+  #root > .hundred_height > .container{
+    padding: 0px;
+    margin: 0px;
+    max-width: 10000px;
   }
-  
-  .card-deck .card {
-    flex-basis: 200px;
-    margin-bottom: 30px;
+
+  #display-card > .card-body > .card-title{
+    font-size: 30pt;
+
   }
-  
-  .activeLink {
-    background-color:#DEE2AE;
-    padding: .25em 1em;
-    border: 1px solid #ddd;
+
+  .card-subtitle{
+    font-size: 14pt;
   }
-  
-  footer {
-    text-align: center;
+
+  #records{
+    max-width: 700px;
+    min-width: 600px;
   }
+  .outside-edit-container{
+    width: 600px;
+  }
+
+  button > img:hover{
+    width: 90%;
+  }
+
+  .btn-group{
+    margin-bottom: 10px;
+  }
+}

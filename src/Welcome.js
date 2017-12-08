@@ -4,14 +4,17 @@ import { BrowserRouter, Route, Switch, Link, NavLink, Redirect } from 'react-rou
 // displays the list of conversation cards
 export class ConvoList extends Component {
     render() {
-        let conversations = this.props.conversations || []; //handle if we aren't given a prop
-        let convoCards = conversations.map((convo) => {
-            return <ConvoCard convo={convo} key={convo.name} />;
-        });
-
         if (this.props.login === false) {
             return <Redirect to='/login' />;
         }
+
+        let conversations = this.props.conversations || []; //handle if we aren't given a prop
+        let convoCards = conversations.map((convo) => {
+            if (convo.userId1 == this.props.currentUser.uid) {
+                return <ConvoCard convo={convo} key={convo.name} />;
+            }
+        });
+
         return (
             <div>
                 <h2>Welcome to Flack!</h2>
@@ -36,7 +39,7 @@ export class ConvoCard extends Component {
     }
 
     render() {
-        let mutt = this.props.convo; 
+        let mutt = this.props.convo;
         if (this.state.link) {
             return <Redirect push to={'/conversations/' + this.props.convo.name} />
         }

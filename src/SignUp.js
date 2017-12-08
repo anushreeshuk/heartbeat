@@ -1,163 +1,185 @@
 import React, { Component } from 'react'; //import React Component
-
-import './SignUp.css'; //load module CSS
-import noUserPic from './img/no-user-pic.png'; //placeholder image (as a data Uri)
-import { Button } from 'reactstrap';
-import { Label } from 'reactstrap';
-import { Input } from 'reactstrap';
-import { FormGroup } from 'reactstrap';
-import { Alert } from 'reactstrap';
-import { FormFeedback } from 'reactstrap';
-
+import { FormFeedback, Alert, FormGroup, Label, Input, Button } from 'reactstrap'
+import { Redirect } from 'react-router-dom'
+import { AddSong, EditPage } from './App';
+// Form group a user will use to sign up on the chat application
 class SignUpForm extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      email: undefined,
-      password: undefined,
-      handle: undefined,
-    }; //initialize state
-  }
+    constructor(props) {
+        super(props);
+        this.state = {
+            email: undefined,
+            password: undefined,
+            handle: undefined,
+            avatar: undefined,
+            age: undefined,
+            
+        }; //initialize state
+    }
 
-  //handle signUp button
-  handleSignUp(event) {
-    event.preventDefault(); //don't submit
-    this.props.signUpCallback(this.state.email, this.state.password, this.state.handle);
-  }
+    // Handle signUp button click event and fire the callback
+    handleSignUp(event) {
+        event.preventDefault(); //don't submit
+        let avatar = this.state.avatar;//assign default if undefined
+        this.props.signUpCallback(this.state.email, this.state.password, this.state.handle, avatar, this.state.age);
+    }
 
-  /**
-   * A helper function to validate a value based on an object of validations
-   * Second parameter has format e.g., 
-   *    {required: true, minLength: 5, email: true}
-   * (for required field, with min length of 5, and valid email)
-   */
-  validate(value, validations) {
-    let errors = [];
+    // Used to handle input change in our form
+    handleChange(event) {
+        this.setState({ [event.target.name]: event.target.value });
+        console.log(this.state[event.target.name]);
+    }
 
-    if (value !== undefined) { //check validations
-      //handle required
-      if (validations.required && value === '') {
-        errors.push('Required field.');
-      }
+    /**
+     * A helper function to validate a value based on an object of validations
+     * Second parameter has format e.g., 
+     *    {required: true, minLength: 5, email: true}
+     * (for required field, with min length of 5, and valid email)
+     */
+    validate(value, validations) {
+        let errors = [];
 
-      //handle minLength
-      if (validations.minLength && value.length < validations.minLength) {
-        errors.push(`Must be at least ${validations.minLength} characters.`);
-      }
+        if (value !== undefined) { //check validations
+            //handle required
+            if (validations.required && value === '') {
+                errors.push('Required field.');
+            }
 
-      //handle email type
-      if (validations.email) {
-        //pattern comparison from w3c
-        //https://www.w3.org/TR/html-markup/input.email.html#input.email.attrs.value.single
-        let valid = /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(value)
-        if (!valid) {
-          errors.push('Not an email address.')
+            //handle minLength
+            if (validations.minLength && value.length < validations.minLength) {
+                errors.push(`Must be at least ${validations.minLength} characters.`);
+            }
+
+            //handle email type
+            if (validations.email) {
+                //pattern comparison from w3c
+                //https://www.w3.org/TR/html-markup/input.email.html#input.email.attrs.value.single
+                let valid = /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(value)
+                if (!valid) {
+                    errors.push('Not an email address.')
+                }
+            }
+            return errors; //report the errors
         }
-      }
-      return errors; //report the errors
+        return undefined; //no errors defined (because no value defined!)
     }
-    return undefined; //no errors defined (because no value defined!)
-  }
 
-  handleChange(event) {
-    let newState = {};
-    newState[event.target.name] = event.target.value;
-    this.setState(newState);
-  }
 
-  /* SignUpForm#render() */
-  render() {
-    let emailErrors = this.validate(this.state.email, { required: true, email: true });
-    let emailValid = emailErrors ? (emailErrors.length == 0 ? true : false) : undefined;
-    let passwordErrors = this.validate(this.state.password, { required: true, minLength: 6 });
-    let passwordValid = passwordErrors ? (passwordErrors.length == 0 ? true : false) : undefined;
-    let handleErrors = this.validate(this.state.handle, { required: true });
-    let handleValid = handleErrors ? (handleErrors.length == 0 ? true : false) : undefined;
-    let emailFeedback = emailErrors ? emailErrors.map((error) => <FormFeedback>{error}</FormFeedback>) : '';
-    let passwordFeedback = passwordErrors ? passwordErrors.map((error) => <FormFeedback>{error}</FormFeedback>) : '';
-    let handleFeedback = handleErrors ? handleErrors.map((error) => <FormFeedback>{error}</FormFeedback>) : '';
-    return (
-      <form>
+    /* SignUpForm#render() */
+    render() {
+        let emailErrors = this.validate(this.state.email, { required: true, email: true });
+        let passwordErrors = this.validate(this.state.password, { required: true, minLength: 6 });
+        let handleErrors = this.validate(this.state.handle, { required: true });
 
-        {/* email */}
-        <FormGroup>
-          <Label for="email">Email</Label>
-          <Input onChange={(e) => this.handleChange(e)}
-            id="email"
-            type="email"
-            name="email"
-            valid={emailValid}
-          />
-          {emailErrors && emailErrors.map((error) => <FormFeedback key={error}>{error}</FormFeedback>)}
-        </FormGroup>
+        function isValid(arr) {
+            if (arr) {
+                if (arr.length > 0) {
+                    return false;
+                } else {
+                    return true
+                }
+            } else {
+                return undefined;
+            }
+        }
 
-        {/* {console.log(emailValid)} */}
-        {/* password */}
-        <FormGroup>
-          <Label for="password">Password</Label>
-          <Input onChange={(e) => this.handleChange(e)}
-            id="password"
-            type="password"
-            name="password"
-            valid={passwordValid}
-          />
-          {passwordErrors && passwordErrors.map((error) => <FormFeedback key={error}>{error}</FormFeedback>)}
-        </FormGroup>
+        // Validator boolean values
+        let emailValid = isValid(emailErrors);
+        let passwordValid = isValid(passwordErrors);
+        let handleValid = isValid(handleErrors);
 
-        {/* {console.log(passwordValid)} */}
-        {/* handle */}
-        <FormGroup>
-          <Label htmlFor="handle">Username</Label>
-          <Input onChange={(e) => this.handleChange(e)}
-            id="handle"
-            name="handle"
-            valid={handleValid}
-          />
-          {handleErrors && handleErrors.map((error) => <FormFeedback key={error}>{error}</FormFeedback>)}
-        </FormGroup>
+        // Only show signup if the user is NOT logged in 
+        if (!this.props.user) {
+            return (
 
-        {/* buttons */}
-        <FormGroup>
-          <Button color="primary" className="mr-2" onClick={(e) => this.handleSignUp(e)}
-            disabled={handleValid && emailValid && passwordValid ? false : true} >
-            Sign Up
-          </Button>
-        </FormGroup>
-      </form>
-    )
-  }
+                <form>
+                    <FormGroup>
+                        <Label htmlFor="handle">Preferred Name</Label>
+                        <Input
+                            role="textbox"
+                            id="handle"
+                            name="handle"
+                            onChange={(event) => this.handleChange(event)}
+                            valid={handleValid}
+                        />
+                        {handleErrors && handleErrors.length > 0 &&
+                            handleErrors.map((err) => <FormFeedback key={err}>{err}</FormFeedback>)
+                        }
+                    </FormGroup>
+
+                    {/* email */}
+                    <FormGroup>
+                        <Label for="email">Email</Label>
+                        <Input
+                            role="textbox"
+                            id="email"
+                            type="email"
+                            name="email"
+                            onChange={(event) => this.handleChange(event)}
+                            valid={emailValid}
+                        />
+                        {emailErrors && emailErrors.length > 0 &&
+                            emailErrors.map((err) => <FormFeedback key={err}>{err}</FormFeedback>)
+                        }
+                    </FormGroup>
+
+                    {/* password */}
+                    <FormGroup>
+                        <Label for="password">Password</Label>
+                        <Input
+                            role="textbox"
+                            id="password"
+                            type="password"
+                            name="password"
+                            onChange={(event) => this.handleChange(event)}
+                            valid={passwordValid}
+                        />
+                        {passwordErrors && passwordErrors.length > 0 &&
+                            passwordErrors.map((err) => <FormFeedback key={err}>{err}</FormFeedback>)
+                        }
+                    </FormGroup>
+
+                    {/* handle */}
+
+
+                    <FormGroup>
+                        <Label for="age">Age</Label>
+                        <Input
+                            role="textbox"
+                            id="age"
+                            name="age" 
+                            onChange={(event) => this.handleChange(event)}
+                            />
+                            
+                    </FormGroup>
+
+                    <FormGroup>
+                        <Label for="pic">Add your Profile Photo (url)</Label>
+                        <Input
+                            role="textbox"
+                            id="pic"
+                            name="pic" 
+                            onChange={(event) => this.handleChange(event)}/>
+                    </FormGroup>
+
+                    {/* buttons */}
+                    <FormGroup>
+                        <Button
+                            role="button"
+                            disabled={!emailValid || !passwordValid || !handleValid} color="success" className="mr-2" onClick={(e) => this.handleSignUp(e)} >
+                            Sign-up
+                        </Button>
+                    </FormGroup>
+
+
+
+                </form>
+            )
+        }
+        // Redirect to the root if user is logged in
+        else {
+            return <Redirect to='/edit' />
+        }
+    }
 }
 
-//A simple component that displays the form, with alert callbacks
-class SignUpApp extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {};
-  }
-
-  handleSignUp(email, password, handle) {
-    this.setState({ alert: `Signing up: '${email}' with handle '${handle}'` });
-  }
-
-  render() {
-    let alert = this.state.alert;
-    let display = null;
-    if (alert != undefined) {
-      display = <Alert color="success">{alert}</Alert>;
-    } else {
-      display = <SignUpForm
-        signUpCallback={(e, p, h, a) => this.handleSignUp(e, p, h)} />;
-    }
-    return (
-      <div className="container">
-        <header>
-          <h1>Sign Up!</h1>
-        </header>
-        {display}
-      </div>
-    );
-  }
-}
-
-export default SignUpForm; //the default
-
+export default SignUpForm; //the default export
