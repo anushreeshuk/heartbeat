@@ -141,8 +141,8 @@ class App extends Component {
 
       //make a new object for A that includes B with liked back TRUE
       this.userLikesRef.child(this.state.user.uid).child(uid).child("likedBack").set(true);
-      
-      
+
+
       if (this.state.userLikes[this.state.user.uid]) {
         Object.keys(this.state.userLikes[this.state.user.uid]).map((key) => {
           if (this.state.userLikes[this.state.user.uid][key]["likedBack"]) {
@@ -679,60 +679,60 @@ export class EditPage extends Component {
     console.log(this.props.profileInput);
     console.log(this.props.profile);
     if (Object.keys(this.props.profileInput).length === 0) {
+
       if (this.props.profile) {
-        if (this.props.profile.albums) {
-          name = this.props.profile.name;
-          age = this.props.profile.age;
 
-          if (this.state.rSelected === "Albums") {
-            displayCollection = Object.keys(this.props.profile.albums).map((albumKey) => {
-              let album = this.props.profile.albums[albumKey];
-              return <Card key={albumKey} className="edit_card">
-                <CardImg top src={album.artworkUrl100} alt="Card image cap" />
-                <CardTitle>{album.collectionName}</CardTitle>
-                <CardSubtitle>{album.artistName}</CardSubtitle>
-                <Button
-                  color="danger"
-                  style={{ display: "inline-block" }}
-                  onClick={() => this.props.handleDeleteCallback("albums", albumKey)}>
-                  Delete
-              </Button>
-              </Card>
-            });
-          }
+        name = this.props.profile.name;
+        age = this.props.profile.age;
 
-          if (this.state.rSelected === "Songs") {
-            displayCollection = Object.keys(this.props.profile.songs).map((songKey) => {
-              let song = this.props.profile.songs[songKey];
-              return <Card key={songKey} className="edit_card">
-                <CardImg top src={song.artworkUrl100} alt="Card image cap" />
-                <CardTitle>{song.trackName}</CardTitle>
-                <CardSubtitle>{song.artistName}</CardSubtitle>
-                <Button
-                  color="danger"
-                  style={{ display: "inline-block" }}
-                  onClick={() => this.props.handleDeleteCallback("songs", songKey)}>
-                  Delete
+        if (this.state.rSelected === "Albums" && this.props.profile.albums) {
+          displayCollection = Object.keys(this.props.profile.albums).map((albumKey) => {
+            let album = this.props.profile.albums[albumKey];
+            return <Card key={albumKey} className="edit_card">
+              <CardImg top src={album.artworkUrl100} alt="Card image cap" />
+              <CardTitle>{album.collectionName}</CardTitle>
+              <CardSubtitle>{album.artistName}</CardSubtitle>
+              <Button
+                color="danger"
+                style={{ display: "inline-block" }}
+                onClick={() => this.props.handleDeleteCallback("albums", albumKey)}>
+                Delete
               </Button>
-              </Card>
-            });
-          }
+            </Card>
+          });
+        }
 
-          if (this.state.rSelected === "Artists") {
-            displayCollection = Object.keys(this.props.profile.artists).map((artistKey) => {
-              let artist = this.props.profile.artists[artistKey];
-              return <Card key={artistKey} className="edit_card">
-                <CardTitle>{artist.artistName}</CardTitle>
-                <CardSubtitle>{artist.primaryGenreName}</CardSubtitle>
-                <Button
-                  color="danger"
-                  style={{ display: "inline-block" }}
-                  onClick={() => this.props.handleDeleteCallback("artists", artistKey)}>
-                  Delete
+        if (this.state.rSelected === "Songs" && this.props.profile.songs) {
+          displayCollection = Object.keys(this.props.profile.songs).map((songKey) => {
+            let song = this.props.profile.songs[songKey];
+            return <Card key={songKey} className="edit_card">
+              <CardImg top src={song.artworkUrl100} alt="Card image cap" />
+              <CardTitle>{song.trackName}</CardTitle>
+              <CardSubtitle>{song.artistName}</CardSubtitle>
+              <Button
+                color="danger"
+                style={{ display: "inline-block" }}
+                onClick={() => this.props.handleDeleteCallback("songs", songKey)}>
+                Delete
               </Button>
-              </Card>
-            });
-          }
+            </Card>
+          });
+        }
+
+        if (this.state.rSelected === "Artists" && this.props.profile.artists) {
+          displayCollection = Object.keys(this.props.profile.artists).map((artistKey) => {
+            let artist = this.props.profile.artists[artistKey];
+            return <Card key={artistKey} className="edit_card">
+              <CardTitle>{artist.artistName}</CardTitle>
+              <CardSubtitle>{artist.primaryGenreName}</CardSubtitle>
+              <Button
+                color="danger"
+                style={{ display: "inline-block" }}
+                onClick={() => this.props.handleDeleteCallback("artists", artistKey)}>
+                Delete
+              </Button>
+            </Card>
+          });
         }
       }
     }
@@ -915,6 +915,8 @@ class MatchPage extends Component {
             };
 
             //matching based on artists
+            console.log(currentProfile);
+
             Object.keys(currentProfile.artists).map((artistKey) => {
               let artist = currentProfile.artists[artistKey];
 
@@ -1118,7 +1120,9 @@ class MatchedCard extends Component {
 
             <ButtonGroup className="action_buttons">
               <Button color="link" onClick={() => this.props.handleSkipCallback()}><img src={skip} /></Button>
-              <Button color="link" onClick={() => this.props.handleLikeCallback(this.props.profile.uid, this.props.profile.name)} ><img id="like" src={like} /></Button>
+              <Button color="link" onClick={() => {
+                this.props.handleLikeCallback(this.props.profile.uid, this.props.profile.name);
+                this.props.handleSkipCallback(); }} ><img id="like" src={like} /></Button>
             </ButtonGroup>
           </div>
         </CardBody>
