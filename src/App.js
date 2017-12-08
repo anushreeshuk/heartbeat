@@ -137,32 +137,32 @@ class App extends Component {
     if (Object.keys(this.state.userLikes).includes(uid)) {
       //case where B exists in userLikes
 
-      //check if B has liked A already
-      console.log(this.state.userLikes[uid]);
       this.userLikesRef.child(uid).child(this.state.user.uid).child("likedBack").set(true);
 
 
       //make a new object for A that includes B with liked back TRUE
-      this.userLikesRef.child(this.state.user.uid).child(uid).child("likedBack").set(true);
+      this.userLikesRef.child(this.state.user.uid).child(uid).child("likedBack").set(true)
+        .then(() => {
 
 
-      Object.keys(this.state.userLikes[this.state.user.uid]).map((key) => {
-        if (this.state.userLikes[this.state.user.uid][key]["likedBack"]) {
-          console.log("Mutual match with " + this.state.users[key]["name"]);
-          let newConvo = {
-            'name': this.state.user.displayName + '+' +  this.state.users[key]["name"],
-            'userId1': this.state.user.uid,
-            'username1': this.state.user.displayName ,
-            'userId2': key,
-            'username2': this.state.users[key]["name"],
-            'lastMessage': "none",
-            'lastUser': "none",
-            'messages': 0
-          };
-          
-          this.convoRef.push(newConvo);
-        }
-      })
+          Object.keys(this.state.userLikes[this.state.user.uid]).map((key) => {
+            if (this.state.userLikes[this.state.user.uid][key]["likedBack"]) {
+              console.log("Mutual match with " + this.state.users[key]["name"]);
+              let newConvo = {
+                'name': this.state.user.displayName + '+' + this.state.users[key]["name"],
+                'userId1': this.state.user.uid,
+                'username1': this.state.user.displayName,
+                'userId2': key,
+                'username2': this.state.users[key]["name"],
+                'lastMessage': "none",
+                'lastUser': "none",
+                'messages': 0
+              };
+
+              this.convoRef.push(newConvo);
+            }
+          })
+        })
 
     } else {
       //case where B is not in userLikes
@@ -402,6 +402,7 @@ class App extends Component {
           <MatchPage
             users={this.state.users}
             user={this.state.user}
+            userLikes={this.state.userLikes}
             checkboxesSelected={this.state.checkboxesSelected}
             profile={this.state.userProfile}
             signOutCallback={() => this.handleSignOut()}
@@ -975,23 +976,33 @@ class MatchPage extends Component {
             let ageRange = this.props.ageRange;
             let checkboxes = this.props.checkboxesSelected;
 
-            if (
-              //Verify music filters are being applied
-              (checkboxes.includes("Artists") && matchDetails.matchedArtistIds.length > 0 ||
-                checkboxes.includes("Albums") && matchDetails.matchedAlbumIds.length > 0 ||
-                checkboxes.includes("Songs") && matchDetails.matchedSongIds.length > 0)
-              &&
-              //Verify age filter
-              (currentProfile.age >= ageRange[0] && currentProfile.age <= ageRange[1])) {
+            if (this.props.userLikes) {
+              if (
+                //Verify music filters are being applied
+                (checkboxes.includes("Artists") && matchDetails.matchedArtistIds.length > 0 ||
+                  checkboxes.includes("Albums") && matchDetails.matchedAlbumIds.length > 0 ||
+                  checkboxes.includes("Songs") && matchDetails.matchedSongIds.length > 0)
+                &&
+                //Verify age filter
+                (currentProfile.age >= ageRange[0] && currentProfile.age <= ageRange[1])
 
-              //construct a match
-              let newMatchProfile = Object.assign({}, currentProfile, matchDetails);
+                &&
+                //Dont show them someone they have liked
+                (this.props.userLikes[this.props.user.uid] ?
+                  !Object.keys(this.props.userLikes[this.props.user.uid]).includes(currentProfile.uid) :
+                  
+                  //if they have no likes yet, pass this test
+                  true)) {
 
-              //assign the match
-              matchedProfiles[currentProfile.uid] = newMatchProfile;
+                //construct a match
+                let newMatchProfile = Object.assign({}, currentProfile, matchDetails);
+
+                //assign the match
+                matchedProfiles[currentProfile.uid] = newMatchProfile;
+              }
+
+              console.log("Matches: ", matchedProfiles);
             }
-
-            console.log("Matches: ", matchedProfiles);
           }
         });
       }
@@ -1134,7 +1145,8 @@ class MatchedCard extends Component {
               <Button color="link" onClick={() => this.props.handleSkipCallback()}><img src={skip} /></Button>
               <Button color="link" onClick={() => {
                 this.props.handleLikeCallback(this.props.profile.uid, this.props.profile.name);
-                this.props.handleSkipCallback();}} ><img id="like" src={like} /></Button>
+                this.props.handleSkipCallback();
+              }} ><img id="like" src={like} /></Button>
             </ButtonGroup>
           </div>
         </CardBody>
