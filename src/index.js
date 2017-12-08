@@ -17,6 +17,7 @@ import 'firebase/database'
 //     storageBucket: "group-proj-dev.appspot.com",
 //     messagingSenderId: "538194400345"
 // };
+
 // firebase.initializeApp(config);
 
 var config = {

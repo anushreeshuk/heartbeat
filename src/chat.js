@@ -4,7 +4,7 @@ import './chat.css';
 import like from './img/like.png';
 import skip from './img/skip.png';
 import logo from './img/heartbeat.png';
-
+import AddConvo from './AddConvo';
 //Forms 
 import SignUpForm from './SignUp';
 import SignInForm from './SignIn';
@@ -54,35 +54,20 @@ export class ConversationsList extends Component {
 
         if (this.props.conversations) {
             //iterate through the conversations prop and create a conversation card for each
-            if (Object.keys(this.props.conversations).length > 0) {
-                conversationsList = Object.keys(this.props.conversations).map((convo) => {
-
+                conversationsList = this.props.conversations.map((convo) => {
                     //added afterwards
-                    if (convo.indexOf(this.props.user.uid) > -1) {
-                        let userIds = convo.split("+");
-                        let userName1 = this.props.users[userIds[0]].name;
-                        let userName2 = this.props.users[userIds[1]].name;
+                    console.log(convo)
+                    if (convo.userId1 == this.props.user.uid) {
                         return <ConversationCard
-                            key={convo}
-                            title={userName1 + " + " + userName2}
-                            subtitle={"Last Message: '" + this.props.conversations[convo].lastMessage.text + "' -" + this.props.conversations[convo].lastMessage.displayName}
-                            text={"# of Messages: " + this.props.conversations[convo].messages}
-                            reroute={"/conversations/" + convo}
+                            key={convo.name}
+                            title={convo.name}
+                            subtitle={"Last Message: '" + convo.lastMessage+ "' -" + convo.lastUser}
+                            text={"# of Messages: " + convo.messages}
+                            reroute={"/conversations/" + convo.name}
                             toggleCallback={() => this.props.toggleCallback()} />
                     }
 
                 });
-
-                //if there is no conversations passed, make the default "general" conversation card  
-            } else {
-                conversationsList = <ConversationCard
-                    key={"general"}
-                    title={"general"}
-                    subtitle="fill this"
-                    text="fill this"
-                    reroute={"/conversations/general"}
-                    toggleCallback={() => this.props.toggleCallback()} />
-            }
         }
 
         return (
@@ -299,33 +284,26 @@ export class NavDrawer extends Component {
         return (
             <MuiThemeProvider>
                 <div>
-                    <Drawer
-                        className="drawer"
-                        open={this.props.open}
-                    >
+                    <Drawer className="drawer" open={this.props.open}>
                         <AppBar
                             title={<img id="logo" src={logo} />}
                             iconElementLeft={<IconButton role="button"><NavigationClose /></IconButton>}
-                            onLeftIconButtonTouchTap={() => this.props.toggleCallback()}
-                        />
-
+                            onLeftIconButtonTouchTap={() => this.props.toggleCallback()} />
                         { // Prompt user to log in if they are not
                             !this.props.user &&
                             <p className="alert alert-info">Please Log In First!</p>}
-
                         { //Content shown when logged in
                             this.props.user &&
                             <div>
                                 <div>
                                     {this.props.conversationList}
-
                                     <Button
                                         role="button"
                                         color="info"
                                         id="newConvoPopover"
                                         onClick={() => { this.props.toggleCallback(); this.toggleModal() }}>
                                         New Conversation
-                  </Button>
+                                     </Button>
 
                                     <Modal
                                         aria-label="new conversation modal"
@@ -333,8 +311,9 @@ export class NavDrawer extends Component {
                                         toggle={this.toggle} className="modal-popover">
                                         <ModalHeader aria-label="make new conversation">New Conversation</ModalHeader>
                                         <ModalBody>
-                                            Please enter the name of your new conversation:
-                      <Input role="textbox" onChange={(event) => this.handleChange(event)} />
+                                        <AddConvo
+                                        user={this.props.user}
+                                        conversations={this.props.conversations}/>
                                         </ModalBody>
                                         <ModalFooter>
                                             <Link to={"/conversations/" + this.state.newConvoValue}>

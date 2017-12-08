@@ -10,6 +10,10 @@ import SignInForm from './SignIn';
 
 //added from chat app below
 import { ConversationsList, ConversationCard, MessagesList, MessageCard, SendMessageForm, NavDrawer } from './chat.js'
+import { ChatRoom } from './ChatRoom'
+import { ConvoList, ConvoCard } from './Welcome'
+import _ from 'lodash'
+import AddConvo from './AddConvo'
 
 //Firebase Imports
 import firebase, { storage } from 'firebase/app';
@@ -50,6 +54,7 @@ import renderHTML from 'react-render-html';
 /* Main app component for this React application, holds functions that will be passed to child components
 and the state of stored objects */
 class App extends Component {
+
   constructor(props) {
     super(props);
     this.state = {
@@ -59,13 +64,14 @@ class App extends Component {
 
       //added from chat app below
       conversations: [],
-      messages: [],
+      // messages: [],
 
       users: [],
       checkboxesSelected: ["Artists", "Albums", "Songs"],
       ageRange: [0, 100],
       profileInput: {}
     };
+
   }
 
   // Initialize firebase authentication and database functionality on component mount
@@ -73,10 +79,10 @@ class App extends Component {
 
     this.authUnRegFunc = firebase.auth().onAuthStateChanged((firebaseUser) => {
       if (firebaseUser) { //someone logged in
-        this.setState({ user: firebaseUser, loading: false });
+        this.setState({ user: firebaseUser, loading: false, login: true });
       }
       else { //someone logged out 
-        this.setState({ user: null, userProfile: null, loading: false });
+        this.setState({ user: null, userProfile: null, loading: false, login: false });
       }
 
     });
@@ -97,12 +103,9 @@ class App extends Component {
       // ADDED FROM CHAT APP BELOW
       this.convoRef = firebase.database().ref("conversations");
       this.convoRef.on("value", (snapshot) => {
-        this.setState({ conversations: snapshot.val() });
-      })
-
-      this.messagesRef = firebase.database().ref("messages");
-      this.messagesRef.on("value", (snapshot) => {
-        this.setState({ messages: snapshot.val() });
+        if (snapshot.val() !== null) {
+          this.setState({ conversations: snapshot.val() });
+        }
       })
 
       this.userLikesRef = firebase.database().ref("userLikes");
@@ -121,8 +124,8 @@ class App extends Component {
     this.usersRef.off();
     this.profileRef.off();
 
-    //added from chat app below
-    this.messagesRef.off();
+    // //added from chat app below
+    // // this.messagesRef.off();
     this.convoRef.off();
   }
 
@@ -143,18 +146,23 @@ class App extends Component {
       this.userLikesRef.child(this.state.user.uid).child(uid).child("likedBack").set(true);
 
 
-      if (this.state.userLikes[this.state.user.uid]) {
-        Object.keys(this.state.userLikes[this.state.user.uid]).map((key) => {
-          if (this.state.userLikes[this.state.user.uid][key]["likedBack"]) {
-            console.log("Mutual match with " + this.state.users[key]["name"]);
-            this.convoRef.child(this.state.user.uid + "+" + key).set({
-              members: [this.state.user.uid, key],
-              lastMessage: "No Messages",
-              messages: 0
-            })
-          }
-        })
-      }
+      Object.keys(this.state.userLikes[this.state.user.uid]).map((key) => {
+        if (this.state.userLikes[this.state.user.uid][key]["likedBack"]) {
+          console.log("Mutual match with " + this.state.users[key]["name"]);
+          let newConvo = {
+            'name': this.state.user.displayName + ' + ' +  this.state.users[key]["name"],
+            'userId1': this.state.user.uid,
+            'username1': this.state.user.displayName ,
+            'userId2': uid,
+            'username2': this.state.users[key]["name"],
+            'lastMessage': "none",
+            'lastUser': "none",
+            'messages': 0
+          };
+          
+          this.convoRef.push(newConvo);
+        }
+      })
 
     } else {
       //case where B is not in userLikes
@@ -185,6 +193,7 @@ class App extends Component {
     firebase.auth()
       .createUserWithEmailAndPassword(email, password)
       .then((firebaseUser) => {
+
         let promise = firebaseUser.updateProfile({ displayName: handle, photoURL: gravatarImg, age: userAge })
         return promise;
       })
@@ -296,38 +305,40 @@ class App extends Component {
     return returnedPromise;
   }
   //added from chat app
-  sendMessage(messageText, conversationName) {
-    // TODO: add a new task and sen it to firebase
-    // TODO: if you don't see a task appearing, look at the console
-    //       and be sure to set up open security rules
-    //       https://info343.github.io/firebase.html#security-rules
-    let newMessage = {
-      author: this.state.user.email,
-      displayName: this.state.user.displayName,
-      photoURL: this.state.user.photoURL,
-      text: messageText,
-      timestamp: firebase.database.ServerValue.TIMESTAMP,
-    }
+  // sendMessage(messageText, conversationName) {
+  //   // TODO: add a new task and sen it to firebase
+  //   // TODO: if you don't see a task appearing, look at the console
+  //   //       and be sure to set up open security rules
+  //   //       https://info343.github.io/firebase.html#security-rules
+  //   let newMessage = {
+  //     author: this.state.user.email,
+  //     displayName: this.state.user.displayName,
+  //     photoURL: this.state.user.photoURL,
+  //     text: messageText,
+  //     timestamp: firebase.database.ServerValue.TIMESTAMP,
+  //   }
 
-    let updatedNumMessages = 1;
-    if (this.state.conversations[conversationName]) {
-      updatedNumMessages = (this.state.conversations[conversationName].messages + 1);
-    }
+  //   let updatedNumMessages = 1;
+  //   if (this.state.conversations[conversationName]) {
+  //     updatedNumMessages = (this.state.conversations[conversationName].messages + 1);
+  //   }
 
-    let newConversation = {
-      lastMessage: newMessage,
-      messages: updatedNumMessages
-    }
+  //   let newConversation = {
+  //     lastMessage: newMessage,
+  //     messages: updatedNumMessages
+  //   }
 
-    this.convoRef.child(conversationName).set(newConversation);
+  //   this.convoRef.child(conversationName).set(newConversation);
 
-    this.messagesRef.child(conversationName).push(newMessage)
-      .catch(err => console.log(err));
-  }
+  //   this.messagesRef.child(conversationName).push(newMessage)
+  //     .catch(err => console.log(err));
+  // }
 
 
   render() {
     let content = null; //content to render
+    let conversations = Object.keys(this.state.conversations).map(obj => this.state.conversations[obj]["id"] = obj);
+    conversations = Object.keys(this.state.conversations).map(obj => this.state.conversations[obj]);
 
     // Rendering content for when the route is signing up
     let renderSignUp = (routerProps) => {
@@ -403,8 +414,8 @@ class App extends Component {
 
     };
 
-    let renderEdit = (routerProps) => {
 
+    let renderEdit = (routerProps) => {
       if (this.state.user) {
         return <div className="hundred_height">
           <TopHeader
@@ -446,14 +457,11 @@ class App extends Component {
             toggleNavCallback={() => this.toggleNav()}
             toggleFilterCallback={() => this.toggleFilter()}
           />
-
-          <MessagesList
-
-            messages={this.state.messages}
-            sendMessageCallback={
-              (messageText, conversationName) => this.sendMessage(messageText, conversationName)
-            }
-            conversationName={routerProps.match.params.convoName} />
+          <ChatRoom
+            {...routerProps}
+            user={this.state.user}
+            conversations={conversations}
+          />
         </div>
       } else {
         return <Redirect to='/login' />
@@ -467,13 +475,17 @@ class App extends Component {
 
         <Switch>
           <Route exact path='/' render={renderMatchPage} />
+          <Route exact path='/conversations' render={(routerProps) => (
+            <Redirect to="/" />)} />
           <Route exact path='/login' render={renderSignIn} />
           <Route exact path='/join' render={renderSignUp} />
           <Route exact path='/edit' render={renderEdit} />
+          <Route path='/add' render={(routerProps) => (
+            <AddConvo {...routerProps} convoArray={conversations} user={this.state.user} />)} />
 
 
           {/* Added from chat app below*/}
-          <Route exact path='/conversations/:convoName' render={renderConversation} />
+          <Route path='/conversations/:Id' render={renderConversation} />
 
         </Switch>
 
@@ -488,7 +500,7 @@ class App extends Component {
             user={this.state.user}
             users={this.state.users}
             messages={this.state.messages}
-            conversations={this.state.conversations}
+            conversations={conversations}
             toggleCallback={() => this.toggleNav()} />}
           signOutCallback={() => this.handleSignOut()}
           sendMessageCallback={(name) => this.sendMessage()} />
