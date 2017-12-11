@@ -54,20 +54,20 @@ export class ConversationsList extends Component {
 
         if (this.props.conversations) {
             //iterate through the conversations prop and create a conversation card for each
-                conversationsList = this.props.conversations.map((convo) => {
-                    //added afterwards
-                    console.log(convo)
-                    if (convo.userId1 == this.props.user.uid) {
-                        return <ConversationCard
-                            key={convo.name}
-                            title={convo.name}
-                            subtitle={"Last Message: '" + convo.lastMessage+ "' -" + convo.lastUser}
-                            text={"# of Messages: " + convo.messages}
-                            reroute={"/conversations/" + convo.name}
-                            toggleCallback={() => this.props.toggleCallback()} />
-                    }
+            conversationsList = this.props.conversations.map((convo) => {
+                //added afterwards
+                console.log(convo)
+                if (convo.userId1 == this.props.user.uid) {
+                    return <ConversationCard
+                        key={convo.name}
+                        title={convo.name}
+                        subtitle={"Last Message: '" + convo.lastMessage + "' -" + convo.lastUser}
+                        text={"# of Messages: " + convo.messages}
+                        reroute={"/conversations/" + convo.name}
+                        toggleCallback={() => this.props.toggleCallback()} />
+                }
 
-                });
+            });
         }
 
         return (
@@ -297,13 +297,16 @@ export class NavDrawer extends Component {
                             <div>
                                 <div>
                                     {this.props.conversationList}
-                                    <Button
-                                        role="button"
-                                        color="info"
-                                        id="newConvoPopover"
-                                        onClick={() => { this.props.toggleCallback(); this.toggleModal() }}>
-                                        New Conversation
+                                    <Link to='/edit'>
+                                        <Button
+                                            role="button"
+                                            color="info"
+                                            id="newConvoPopover"
+                                            onClick={() => this.props.toggleCallback()}
+                                        >
+                                            Edit Profile
                                      </Button>
+                                    </Link>
 
                                     <Modal
                                         aria-label="new conversation modal"
@@ -311,9 +314,9 @@ export class NavDrawer extends Component {
                                         toggle={this.toggle} className="modal-popover">
                                         <ModalHeader aria-label="make new conversation">New Conversation</ModalHeader>
                                         <ModalBody>
-                                        <AddConvo
-                                        user={this.props.user}
-                                        conversations={this.props.conversations}/>
+                                            <AddConvo
+                                                user={this.props.user}
+                                                conversations={this.props.conversations} />
                                         </ModalBody>
                                         <ModalFooter>
                                             <Link to={"/conversations/" + this.state.newConvoValue}>

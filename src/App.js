@@ -508,6 +508,9 @@ class App extends Component {
 
         <FilterDrawer
           open={this.state.filterOpen}
+          userLikes={this.state.userLikes}
+          users={this.state.users}
+          user={this.state.user}
           toggleCallback={() => this.toggleFilter()}
           state={this.state}
           checkboxCallback={(selected) => this.handleCheckBox(selected)}
@@ -561,7 +564,12 @@ class SearchResults extends Component {
             {item.collectionName &&
               <CardTitle>{item.collectionName}</CardTitle>}
 
-            <CardSubtitle>{item.artistName}</CardSubtitle>
+            {item.artistLinkUrl &&
+              <CardTitle><a target="_blank" href={item.artistLinkUrl}>{item.artistName}</a></CardTitle>}
+
+            {item.collectionName &&
+              <CardSubtitle>{item.artistName}</CardSubtitle>}
+
             {this.props.searchEntity === "musicArtist" &&
               <Button color="success" onClick={(id, type) => this.props.addItemCallback(item.artistId, this.props.searchEntity)}>Add</Button>}
             {this.props.searchEntity === "album" &&
@@ -736,7 +744,7 @@ export class EditPage extends Component {
           displayCollection = Object.keys(this.props.profile.artists).map((artistKey) => {
             let artist = this.props.profile.artists[artistKey];
             return <Card key={artistKey} className="edit_card">
-              <CardTitle>{artist.artistName}</CardTitle>
+              <CardTitle><a href={artist.artistLinkUrl}>{artist.artistName}</a></CardTitle>
               <CardSubtitle>{artist.primaryGenreName}</CardSubtitle>
               <Button
                 color="danger"
@@ -930,48 +938,52 @@ class MatchPage extends Component {
             //matching based on artists
             console.log(currentProfile);
 
-            Object.keys(currentProfile.artists).map((artistKey) => {
-              let artist = currentProfile.artists[artistKey];
+            if (currentProfile.artists) {
+              Object.keys(currentProfile.artists).map((artistKey) => {
+                let artist = currentProfile.artists[artistKey];
 
-              if (profileArtistsIds.includes(artist.artistId)) {
+                if (profileArtistsIds.includes(artist.artistId)) {
 
-                if (!matchDetails.matchedArtistIds.includes(artist.artistId)) {
-                  matchDetails.matchedArtists.push(artist);
-                  matchDetails.matchedArtistIds.push(artist.artistId);
+                  if (!matchDetails.matchedArtistIds.includes(artist.artistId)) {
+                    matchDetails.matchedArtists.push(artist);
+                    matchDetails.matchedArtistIds.push(artist.artistId);
+                  }
+
                 }
+              });
+            }
 
-              }
+            if (currentProfile.albums) {
+              //matching based on albums
+              Object.keys(currentProfile.albums).map((albumKey) => {
+                let album = currentProfile.albums[albumKey];
 
-            });
+                if (profileAlbumsIds.includes(album.collectionId)) {
 
-            //matching based on albums
-            Object.keys(currentProfile.albums).map((albumKey) => {
-              let album = currentProfile.albums[albumKey];
+                  if (!matchDetails.matchedArtistIds.includes(album.collectionId)) {
+                    matchDetails.matchedAlbums.push(album);
+                    matchDetails.matchedAlbumIds.push(album.collectionId);
+                  }
 
-              if (profileAlbumsIds.includes(album.collectionId)) {
-
-                if (!matchDetails.matchedArtistIds.includes(album.collectionId)) {
-                  matchDetails.matchedAlbums.push(album);
-                  matchDetails.matchedAlbumIds.push(album.collectionId);
                 }
+              });
+            }
 
-              }
+            if (currentProfile.songs) {
+              //matching based on songs
+              Object.keys(currentProfile.songs).map((songKey) => {
+                let song = currentProfile.songs[songKey];
 
-            });
+                if (profileSongsIds.includes(song.trackId)) {
 
-            //matching based on songs
-            Object.keys(currentProfile.songs).map((songKey) => {
-              let song = currentProfile.songs[songKey];
+                  if (!matchDetails.matchedSongIds.includes(song.trackId)) {
+                    matchDetails.matchedSongs.push(song);
+                    matchDetails.matchedSongIds.push(song.trackId);
+                  }
 
-              if (profileSongsIds.includes(song.trackId)) {
-
-                if (!matchDetails.matchedSongIds.includes(song.trackId)) {
-                  matchDetails.matchedSongs.push(song);
-                  matchDetails.matchedSongIds.push(song.trackId);
                 }
-
-              }
-            });
+              });
+            }
 
             let ageRange = this.props.ageRange;
             let checkboxes = this.props.checkboxesSelected;
@@ -990,7 +1002,7 @@ class MatchPage extends Component {
                 //Dont show them someone they have liked
                 (this.props.userLikes[this.props.user.uid] ?
                   !Object.keys(this.props.userLikes[this.props.user.uid]).includes(currentProfile.uid) :
-                  
+
                   //if they have no likes yet, pass this test
                   true)) {
 
@@ -1178,15 +1190,18 @@ class TopHeader extends Component {
 class FilterDrawer extends Component {
 
   render() {
-
-    let ageOptions = [];
-    for (let i = 0; i < 100; i++) {
-      ageOptions.push(i);
+    let pendingLikesCards = [];
+    if (this.props.userLikes && this.props.user) {
+      pendingLikesCards = Object.keys(this.props.userLikes[this.props.user.uid]).map((innerKey) => {
+        let userSentLikes = this.props.userLikes[this.props.user.uid];
+        
+        if (!userSentLikes[innerKey].likedBack) {
+          return <Card className="mb-2">
+            <CardSubtitle> {this.props.users[innerKey].name} </CardSubtitle>
+          </Card>;
+        }
+      });
     }
-
-    let options = ageOptions.map((i) => {
-      return <option>{i}</option>
-    })
 
     return (
       <MuiThemeProvider>
@@ -1209,6 +1224,8 @@ class FilterDrawer extends Component {
               { //Content shown when logged in
                 this.props.state.user &&
                 <Container className="m-1">
+
+                  <h2> Filters: </h2>
                   <Row className="mb-4">
                     <Col>
                       <p className="filter_label mb-0"> Match Basis: </p>
@@ -1220,11 +1237,11 @@ class FilterDrawer extends Component {
                     </Col>
                   </Row>
 
-                  <Row>
+                  <Row className="mb-4">
                     <p className="filter_label"> Age: </p>
 
                     <Col className="pr-0">
-                      <Input type="number" id="minAge" placeholder="0" onChange={(event) => this.props.handleAgeChangeCallback("min_change", event.target.value)} />
+                      <Input type="number" id="minAge" min="18" placeholder="18" onChange={(event) => this.props.handleAgeChangeCallback("min_change", event.target.value)} />
                     </Col>
                     <Col className="m-0 p-0"> <p className="secondary_text">to</p> </Col>
                     <Col className="pl-0">
@@ -1232,6 +1249,10 @@ class FilterDrawer extends Component {
                     </Col>
                   </Row>
 
+                  <h2> Pending Likes: </h2>
+                  <Row>
+                    {pendingLikesCards}
+                  </Row>
 
                 </Container>
 
