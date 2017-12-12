@@ -41,17 +41,22 @@ export class MessageList extends Component {
   }
 
   render() {
+    //converts all messages to an array of messages
     let messageList = Object.keys(this.state.messages).map(obj => this.state.messages[obj]["id"] = obj);
     messageList = Object.keys(this.state.messages).map(obj => this.state.messages[obj]);
+
+    //checks if array of messages exists
     if (messageList) {
+
+      //creates a message card for every message
       messageList = messageList.map((message) => {
         return <MessageCard
-        key={message.id}
-        displayName={message.userName}
-        photoURL={message.userPhoto}
-        text={message.text}
-        timestamp={message.time} />
-    });        
+          key={message.id}
+          displayName={message.userName}
+          photoURL={message.userPhoto}
+          text={message.text}
+          timestamp={message.time} />
+      });
     }
 
     return (
@@ -71,21 +76,12 @@ export class MessageList extends Component {
             </div>
           </div>
         </div>
-
-        {/* <div className="row">
-          <div className="col-12">
-            <SendMessageForm
-              submitCallback={(messageText, conversationName) => { this.props.sendMessageCallback(messageText, conversationName) }}
-              conversationName={this.props.conversationName} />
-          </div>
-        </div> */}
       </div>
 
     );
   }
 }
 
-//added from chat app below
 // Shows a specific message that includes the display name, picture, text, and time sent
 export class MessageCard extends Component {
   render() {
