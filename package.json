@@ -2,6 +2,7 @@
   "name": "heartbeat",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://anushreeshuk.github.io/heartbeat",
   "dependencies": {
     "bootstrap": "^4.0.0-beta.2",
     "firebase": "^4.7.0",
@@ -23,6 +24,8 @@
     "remarkable": "^1.7.1"
   },
   "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",

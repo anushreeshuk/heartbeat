@@ -8,18 +8,6 @@ import firebase from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/database'
 
-// Initialize Firebase
-// var config = {
-//     apiKey: "AIzaSyAInUGOhRpMqohXYMEbFt2km-_AWZ_kBoI",
-//     authDomain: "group-proj-dev.firebaseapp.com",
-//     databaseURL: "https://group-proj-dev.firebaseio.com",
-//     projectId: "group-proj-dev",
-//     storageBucket: "group-proj-dev.appspot.com",
-//     messagingSenderId: "538194400345"
-// };
-
-// firebase.initializeApp(config);
-
 var config = {
     apiKey: "AIzaSyCLJbg2GIoLKXAiLHDCG15FaReuqEmxH5c",
     authDomain: "heartbeat-1a0c7.firebaseapp.com",

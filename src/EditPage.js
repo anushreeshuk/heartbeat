@@ -7,7 +7,7 @@ import {
 } from 'reactstrap';
 
 
-
+//Main component that renders the editing page where users can add or remove music to find matches
 export class EditPage extends Component {
 
     constructor(props) {
@@ -18,6 +18,7 @@ export class EditPage extends Component {
         };
     }
 
+    //handles changes with the radio buttons
     onRadioBtnClick(rSelected) {
         //console.log(rSelected);
         this.setState({ rSelected });
@@ -36,6 +37,7 @@ export class EditPage extends Component {
                 name = this.props.profile.name;
                 age = this.props.profile.age;
 
+                //if albumbs are active
                 if (this.state.rSelected === "Albums" && this.props.profile.albums) {
                     displayCollection = Object.keys(this.props.profile.albums).map((albumKey) => {
                         let album = this.props.profile.albums[albumKey];
@@ -46,13 +48,16 @@ export class EditPage extends Component {
                             <Button
                                 color="danger"
                                 style={{ display: "inline-block" }}
-                                onClick={() => this.props.handleDeleteCallback("albums", albumKey)}>
+                                onClick={() => this.props.handleDeleteCallback("albums", albumKey)}
+                                role="button"
+                                aria-label="delete">
                                 Delete
-                  </Button>
+                            </Button>
                         </Card>
                     });
                 }
 
+                //if songs are active
                 if (this.state.rSelected === "Songs" && this.props.profile.songs) {
                     displayCollection = Object.keys(this.props.profile.songs).map((songKey) => {
                         let song = this.props.profile.songs[songKey];
@@ -63,13 +68,16 @@ export class EditPage extends Component {
                             <Button
                                 color="danger"
                                 style={{ display: "inline-block" }}
-                                onClick={() => this.props.handleDeleteCallback("songs", songKey)}>
+                                onClick={() => this.props.handleDeleteCallback("songs", songKey)}
+                                role="button"
+                                aria-label="button">
                                 Delete
-                  </Button>
+                            </Button>
                         </Card>
                     });
                 }
 
+                //if artists are active
                 if (this.state.rSelected === "Artists" && this.props.profile.artists) {
                     displayCollection = Object.keys(this.props.profile.artists).map((artistKey) => {
                         let artist = this.props.profile.artists[artistKey];
@@ -79,15 +87,18 @@ export class EditPage extends Component {
                             <Button
                                 color="danger"
                                 style={{ display: "inline-block" }}
-                                onClick={() => this.props.handleDeleteCallback("artists", artistKey)}>
+                                onClick={() => this.props.handleDeleteCallback("artists", artistKey)}
+                                role="button"
+                                aria-label="button">
                                 Delete
-                  </Button>
+                            </Button>
                         </Card>
                     });
                 }
             }
         }
         else {
+            //If they are in the signup process, set their user object up
             this.props.usersRef.child(this.props.user.uid).set({
                 uid: this.props.user.uid,
                 age: this.props.profileInput.age,
@@ -100,9 +111,9 @@ export class EditPage extends Component {
             <div className="center-outer-div">
                 <div className="center-inner-div">
                     <ButtonGroup>
-                        <Button color="primary" onClick={() => this.onRadioBtnClick("Artists")} active={this.state.rSelected === "Artists"}>Artists</Button>
-                        <Button color="primary" onClick={() => this.onRadioBtnClick("Albums")} active={this.state.rSelected === "Albums"}>Albums</Button>
-                        <Button color="primary" onClick={() => this.onRadioBtnClick("Songs")} active={this.state.rSelected === "Songs"}>Songs</Button>
+                        <Button role="button" aria-label="select artists" color="primary" onClick={() => this.onRadioBtnClick("Artists")} active={this.state.rSelected === "Artists"}>Artists</Button>
+                        <Button role="button" aria-label="select albums" color="primary" onClick={() => this.onRadioBtnClick("Albums")} active={this.state.rSelected === "Albums"}>Albums</Button>
+                        <Button role="button" aria-label="select songs" color="primary" onClick={() => this.onRadioBtnClick("Songs")} active={this.state.rSelected === "Songs"}>Songs</Button>
                     </ButtonGroup>
                     <Container className="card_container">
 
@@ -133,6 +144,7 @@ export class EditPage extends Component {
     }
 }
 
+//Field to add new music by interacting with iTunes API
 class AddMusicItem extends Component {
     constructor(props) {
         super(props);
@@ -142,6 +154,7 @@ class AddMusicItem extends Component {
         };
     }
 
+    //Makes a request to the iTunes API and asynchronously calls another method 
     fetchTrackList(searchTerm) {
         // toggleSpinner();
         let url = "https://itunes.apple.com/search?entity=" + this.state.searchEntity + "&limit=25&term=" + searchTerm;
@@ -170,6 +183,8 @@ class AddMusicItem extends Component {
 
         return returnedPromise;
     }
+
+    //Handler for when user wants to search different type of music
     handleEntityChange(term) {
         //edge case 
         if (term === "Artists") {
@@ -189,19 +204,19 @@ class AddMusicItem extends Component {
                 <form className="form-inline" method="GET" action="https://itunes.apple.com/search">
                     <div className="form-group mr-3">
                         <label htmlFor="searchQuery" className="mr-2">What do you want to add?</label>
-                        <Input role="textbox" onChange={(event) => this.setState({ searchValue: event.target.value })} />
+                        <Input aria-label="search text" role="textbox" onChange={(event) => this.setState({ searchValue: event.target.value })} />
                     </div>
                     <FormGroup>
                         <Label for="exampleSelect">Type:</Label>
-                        <Input type="select" name="select" id="exampleSelect" onChange={(event) => this.handleEntityChange(event.target.value)}>
+                        <Input aria-label="search type" role="input" type="select" name="select" id="exampleSelect" onChange={(event) => this.handleEntityChange(event.target.value)}>
                             <option>Artists</option>
                             <option>Albums</option>
                             <option>Songs</option>
                         </Input>
                     </FormGroup>
-                    <button type="submit" className="btn btn-primary" onClick={(event) => { event.preventDefault(); this.fetchTrackList(this.state.searchValue) }}>
+                    <button aria-label="submit form" role="button" type="submit" className="btn btn-primary" onClick={(event) => { event.preventDefault(); this.fetchTrackList(this.state.searchValue) }}>
                         <i className="fa fa-music" aria-hidden="true"></i> Search!
-          </button>
+                    </button>
                 </form>
 
                 <SearchResults
@@ -216,6 +231,7 @@ class AddMusicItem extends Component {
     }
 }
 
+//Display for what is returned from the search. Makes a card for each item with the option to add
 class SearchResults extends Component {
     render() {
         //console.log(this.props.data);
@@ -231,6 +247,8 @@ class SearchResults extends Component {
                 objects = Object.keys(songArrayResult).map((key) => {
                     let item = songArrayResult[key];
                     return <Card key={key} className="music_card">
+
+                        {/* use conditional rendering to make different cards*/}
                         {item.artworkUrl100 &&
                             <CardImg top src={item.artworkUrl100} alt="Card image cap" />}
                         {item.trackName &&
@@ -246,17 +264,16 @@ class SearchResults extends Component {
                             <CardSubtitle>{item.artistName}</CardSubtitle>}
 
                         {this.props.searchEntity === "musicArtist" &&
-                            <Button color="success" onClick={(id, type) => this.props.addItemCallback(item.artistId, this.props.searchEntity)}>Add</Button>}
+                            <Button role="button" aria-label="add artist" color="success" onClick={(id, type) => this.props.addItemCallback(item.artistId, this.props.searchEntity)}>Add</Button>}
                         {this.props.searchEntity === "album" &&
-                            <Button color="success" onClick={(id, type) => this.props.addItemCallback(item.collectionId, this.props.searchEntity)}>Add</Button>}
+                            <Button role="button" aria-label="add album" color="success" onClick={(id, type) => this.props.addItemCallback(item.collectionId, this.props.searchEntity)}>Add</Button>}
                         {this.props.searchEntity === "song" &&
-                            <Button color="success" onClick={(id, type) => this.props.addItemCallback(item.trackId, this.props.searchEntity)}>Add</Button>}
+                            <Button role="button" aria-label="add song" color="success" onClick={(id, type) => this.props.addItemCallback(item.trackId, this.props.searchEntity)}>Add</Button>}
 
                     </Card>
                 });
             }
 
-            //console.log(objects);
             return (
                 <div id="records"> {objects} </div>
             );

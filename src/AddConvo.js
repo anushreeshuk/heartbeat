@@ -3,8 +3,7 @@ import { Button } from 'reactstrap';
 import { Label } from 'reactstrap';
 import { Input } from 'reactstrap';
 import { FormGroup } from 'reactstrap';
-import { Alert } from 'reactstrap';
-import { FormFeedback, Form } from 'reactstrap';
+import { Form } from 'reactstrap';
 import { Redirect } from 'react-router-dom';
 import firebase from 'firebase/app';
 import _ from 'lodash';
@@ -51,7 +50,7 @@ class AddConvo extends Component {
 
     handleChange(event, users) {
         let newState = {};
-        if(event.target.value == "Choose"){
+        if(event.target.value === "Choose"){
             newState.valid = false;
         } else {
             newState.valid = true;

@@ -7,39 +7,31 @@ import './App.css';
 import SignUpForm from './SignUp';
 import SignInForm from './SignIn';
 
-//added from chat app below
-import { ConversationsList, ConversationCard, MessagesList, MessageCard, SendMessageForm, NavDrawer } from './chat.js'
+//Chat functionality
+import { ConversationsList, NavDrawer } from './Chat'
 import { ChatRoom } from './ChatRoom'
 
 //Firebase Imports
 import firebase, { storage } from 'firebase/app';
-import { BrowserRouter, Route, Switch, Link, NavLink, Redirect } from 'react-router-dom';
+import { BrowserRouter, Route, Switch, Link, Redirect } from 'react-router-dom';
 import {
-  Button, Card, CardText, CardImg, CardSubtitle, CardBody,
-  CardTitle, Modal, ModalHeader, ModalBody, ModalFooter, Input,
-  Container, Row, Col, ButtonGroup, Label, FormGroup
+  Button, Card, CardSubtitle, Input,
+  Container, Row, Col, ButtonGroup
 } from 'reactstrap';
 
 
 //Material UI Imports
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import AppBar from 'material-ui/AppBar';
-import RaisedButton from 'material-ui/RaisedButton';
 import Drawer from 'material-ui/Drawer';
-import MenuItem from 'material-ui/MenuItem';
 import IconButton from 'material-ui/IconButton';
 import NavigationClose from 'material-ui/svg-icons/navigation/close';
-import FlatButton from 'material-ui/FlatButton';
 import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
-import IconMenu from 'material-ui/IconMenu';
 
 //md5 Import
 import md5 from 'md5';
 
 //Additional Feature imports
-import Remarkable from 'remarkable';
-import Markdown from 'react-remarkable';
-import renderHTML from 'react-render-html';
 import { EditPage } from './EditPage'
 import { MatchPage } from './MatchPage'
 
@@ -53,10 +45,7 @@ class App extends Component {
       loading: true,
       navOpen: false,
       filterOpen: false,
-
-      //added from chat app below
       conversations: [],
-      // messages: [],
       users: [],
       checkboxesSelected: ["Artists", "Albums", "Songs"],
       ageRange: [0, 100],
@@ -72,8 +61,7 @@ class App extends Component {
       if (firebaseUser) { //someone logged in
         this.setState({ user: firebaseUser, loading: false, login: true });
         this.profileRef.on("value", (snapshot) => {
-          console.log("level3")
-          console.log(snapshot.val());
+          
           this.setState({ userProfile: snapshot.val() });
         });
       }
@@ -83,15 +71,14 @@ class App extends Component {
 
     });
 
-    console.log("level1")
+   
     this.usersRef = firebase.database().ref("users");
     this.usersRef.on("value", (snapshot) => {
       if (this.state.user) {
-        console.log("level2")
+        
         this.profileRef = firebase.database().ref("users/" + this.state.user.uid);
         this.profileRef.on("value", (snapshot) => {
-          console.log("level3")
-          console.log(snapshot.val());
+          
           this.setState({ userProfile: snapshot.val() });
         });
 
@@ -122,17 +109,11 @@ class App extends Component {
     this.authUnRegFunc();
     this.usersRef.off();
     this.profileRef.off();
-
-    // //added from chat app below
-    // // this.messagesRef.off();
     this.convoRef.off();
   }
 
   handleLike(uid, name) {
-    //console.log("User Likes Object: ", this.state.userLikes);
-    //console.log("Current User's UID: ", this.state.user.uid);
-    //console.log("Liked User's UID:", uid);
-
+  
     if (Object.keys(this.state.userLikes).includes(uid)) {
       //case where B exists in userLikes
 
@@ -146,7 +127,7 @@ class App extends Component {
 
           Object.keys(this.state.userLikes[this.state.user.uid]).map((key) => {
             if (this.state.userLikes[this.state.user.uid][key]["likedBack"]) {
-              //console.log("Mutual match with " + this.state.users[key]["name"]);
+              
               let newConvo = {
                 'name': this.state.user.displayName + '+' + this.state.users[key]["name"],
                 'userId1': this.state.user.uid,
@@ -174,12 +155,12 @@ class App extends Component {
   }
 
   // A callback function for registering new users in the chat
-  handleSignUp(email, password, handle, avatar, userAge, userImg) {
-    //console.log(userAge);
-    this.setState({ errorMessage: null, profileInput: { name: handle, age: parseInt(userAge), img: userImg } }); //clear any old errors
+  handleSignUp(email, password, handle, avatar, userAge, userImg, userImg2) {
+  
+    this.setState({ errorMessage: null, profileInput: { name: handle, age: parseInt(userAge), img: userImg, img2: userImg2} }); //clear any old errors
     let gravatarImg = "https://www.gravatar.com/avatar/" + md5(email);
 
-    /* TODO: sign up user here */
+  
     firebase.auth()
       .createUserWithEmailAndPassword(email, password)
       .then((firebaseUser) => {
@@ -259,8 +240,6 @@ class App extends Component {
 
   addItem(id, type) {
 
-    //console.log(id);
-    //console.log(type);
 
     let url = "https://itunes.apple.com/lookup?id=" + id
 
@@ -270,9 +249,6 @@ class App extends Component {
         return dataPromise;  //hand this Promise up
       })
       .then((data) => {
-        console.log(data);
-        console.log(this.profileRef);
-        console.log(this.state.user.uid);
 
         if (type === "musicArtist") {
           firebase.database().ref("users/" + this.state.user.uid).child("artists").push(data.results[0]);
@@ -310,7 +286,7 @@ class App extends Component {
         />
         <h1> Sign Up </h1>
         <SignUpForm
-          signUpCallback={(e, p, h, a, age, img) => this.handleSignUp(e, p, h, a, age, img)}
+          signUpCallback={(e, p, h, a, age, img, img2) => this.handleSignUp(e, p, h, a, age, img, img2)}
           user={this.state.user}
         />
 
@@ -392,18 +368,11 @@ class App extends Component {
 
     };
 
-    //Added from chat app below
     let renderConversation = (routerProps) => {
 
       if (this.state.user && this.state.users) {
-        // let userIds = (routerProps.match.params.convoName).split("+");
-        // //console.log(this.state.user);
-        // let userName1 = this.state.users[userIds[0]]["name"];
-        // let userName2 = this.state.users[userIds[1]].name;
 
         return <div>
-
-
           <TopHeader
             className="mb-4"
             title={routerProps.match.params.convoName}
@@ -489,7 +458,6 @@ class App extends Component {
   }
 }
 
-
 // Consistent header on top of the application which is used to open the nav bar and provide general information
 class TopHeader extends Component {
   render() {
@@ -500,7 +468,7 @@ class TopHeader extends Component {
           className="mb-2"
           title={this.props.title}
           onLeftIconButtonTouchTap={() => this.props.toggleNavCallback()}
-          iconElementRight={<IconButton><MoreVertIcon /></IconButton>}
+          iconElementRight={<IconButton role="button" aria-label="show more"><MoreVertIcon /></IconButton>}
           onRightIconButtonTouchTap={() => this.props.toggleFilterCallback()}
         />
       </MuiThemeProvider>
@@ -533,8 +501,8 @@ class FilterDrawer extends Component {
             openSecondary={true}
           >
             <AppBar
-              title="Filter"
-              iconElementLeft={<IconButton role="button"><NavigationClose /></IconButton>}
+              title="More"
+              iconElementLeft={<IconButton aria-label="close navigation" role="button"><NavigationClose /></IconButton>}
               onLeftIconButtonTouchTap={() => this.props.toggleCallback()}
             />
             <div id="filter_inner_container">
@@ -551,9 +519,9 @@ class FilterDrawer extends Component {
                     <Col>
                       <p className="filter_label mb-0"> Match Basis: </p>
                       <ButtonGroup>
-                        <Button color="primary" onClick={() => this.props.checkboxCallback("Artists")} active={this.props.state.checkboxesSelected.includes("Artists")}>Artists</Button>
-                        <Button color="primary" onClick={() => this.props.checkboxCallback("Albums")} active={this.props.state.checkboxesSelected.includes("Albums")}>Albums</Button>
-                        <Button color="primary" onClick={() => this.props.checkboxCallback("Songs")} active={this.props.state.checkboxesSelected.includes("Songs")}>Songs</Button>
+                        <Button role="button" aria-label="select artist" color="primary" onClick={() => this.props.checkboxCallback("Artists")} active={this.props.state.checkboxesSelected.includes("Artists")}>Artists</Button>
+                        <Button role="button" aria-label="select albums" color="primary" onClick={() => this.props.checkboxCallback("Albums")} active={this.props.state.checkboxesSelected.includes("Albums")}>Albums</Button>
+                        <Button role="button" aria-label="select songs" color="primary" onClick={() => this.props.checkboxCallback("Songs")} active={this.props.state.checkboxesSelected.includes("Songs")}>Songs</Button>
                       </ButtonGroup>
                     </Col>
                   </Row>
@@ -562,11 +530,11 @@ class FilterDrawer extends Component {
                     <p className="filter_label"> Age: </p>
 
                     <Col className="pr-0">
-                      <Input type="number" id="minAge" min="18" placeholder="18" onChange={(event) => this.props.handleAgeChangeCallback("min_change", event.target.value)} />
+                      <Input role="input" aria-label="minium age" type="number" id="minAge" min="18" placeholder="18" onChange={(event) => this.props.handleAgeChangeCallback("min_change", event.target.value)} />
                     </Col>
                     <Col className="m-0 p-0"> <p className="secondary_text">to</p> </Col>
                     <Col className="pl-0">
-                      <Input type="number" id="maxAge" placeholder="100" onChange={(event) => this.props.handleAgeChangeCallback("max_change", event.target.value)} />
+                      <Input role="input" aria-label="maximum age"  type="number" id="maxAge" placeholder="100" onChange={(event) => this.props.handleAgeChangeCallback("max_change", event.target.value)} />
                     </Col>
                   </Row>
 

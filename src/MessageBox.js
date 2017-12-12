@@ -1,8 +1,6 @@
 import React, { Component } from 'react'; //import React Component
 import './message.css'; //load module-specific CSS
 import firebase from 'firebase/app';
-import Gravatar from 'react-gravatar'
-import md5 from 'md5';
 import _ from 'lodash';
 
 //A form the user can use to post a message
@@ -81,7 +79,7 @@ export class MessageBox extends Component {
     return (
       <div className="container">
         <div className="row py-3 chirp-box">
-          <img src={photoURL} default="monsterid" className="avatar" />
+          
           <div className="col pl-4 pl-lg-1">
             <form>
               <textarea name="text" className="form-control mb-2" placeholder="Type message here..."

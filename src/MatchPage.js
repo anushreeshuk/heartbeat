@@ -2,9 +2,9 @@
 
 import React, { Component } from 'react'; //import React Component
 import {
-    Button, Card, CardText, CardImg, CardSubtitle, CardBody,
-    CardTitle, Modal, ModalHeader, ModalBody, ModalFooter, Input,
-    Container, Row, Col, ButtonGroup, Label, FormGroup
+    Button, Card, CardImg, CardSubtitle, CardBody,
+    CardTitle,
+    Container, Row, Col, ButtonGroup
 } from 'reactstrap';
 
 import like from './img/like.png';
@@ -24,16 +24,18 @@ export class MatchPage extends Component {
 
     }
 
+    //Handler for the navigation bar
     toggle() {
         this.setState({ open: !this.state.open })
     }
 
+    //Handler for when a user skips the current card on screen
     handleSkip() {
         this.setState({ currentCardIndex: this.state.currentCardIndex + 1 })
     }
 
     render() {
-        console.log("rendered");
+    
         let name = ""
         let age = "";
         let displayCollection = [];
@@ -43,7 +45,7 @@ export class MatchPage extends Component {
         if (this.props.users) {
 
             if (this.props.profile) {
-                console.log("true");
+               
                 let profileArtistsIds = [];
                 let profileAlbumsIds = [];
                 let profileSongsIds = [];
@@ -66,8 +68,9 @@ export class MatchPage extends Component {
                     profileSongsIds.push(song.trackId);
                 });
 
-                //find matches
+                //go thru each key and find matches
                 Object.keys(this.props.users).map((userKey) => {
+                    
                     if (this.props.users[userKey].uid !== this.props.user.uid) {
                         let currentProfile = this.props.users[userKey];
                         let matchDetails = {
@@ -78,9 +81,6 @@ export class MatchPage extends Component {
                             matchedAlbums: [],
                             matchedSongs: [],
                         };
-
-                        //matching based on artists
-                        //console.log(currentProfile);
 
                         if (currentProfile.artists) {
                             Object.keys(currentProfile.artists).map((artistKey) => {
@@ -129,6 +129,7 @@ export class MatchPage extends Component {
                             });
                         }
 
+                        //factor in filters when making matches
                         let ageRange = this.props.ageRange;
                         let checkboxes = this.props.checkboxesSelected;
 
@@ -157,7 +158,7 @@ export class MatchPage extends Component {
                                 matchedProfiles[currentProfile.uid] = newMatchProfile;
                             }
 
-                            //console.log("Matches: ", matchedProfiles);
+                           
                         }
                     }
                 });
@@ -165,6 +166,7 @@ export class MatchPage extends Component {
         }
 
 
+        //set up our matches card stack
         let profileKeys = Object.keys(matchedProfiles)
         let endOfStack = false;
         let matchedCards = profileKeys.map((key) => {
@@ -198,6 +200,7 @@ export class MatchPage extends Component {
     }
 }
 
+//A single match card that shows user information and additional functionality 
 class MatchedCard extends Component {
     constructor(props) {
         super(props);
@@ -207,8 +210,9 @@ class MatchedCard extends Component {
         };
     }
 
+    //Handler for when radio buttons are clicked
     onRadioBtnClick(rSelected) {
-        //console.log(rSelected);
+        
         this.setState({ rSelected });
     }
 
@@ -223,6 +227,7 @@ class MatchedCard extends Component {
                 name = this.props.profile.name;
                 age = this.props.profile.age;
 
+                //Viewing albums of current match
                 if (this.state.rSelected === "Albums") {
                     displayCollection = Object.keys(this.props.profile.albums).map((albumKey) => {
                         let album = this.props.profile.albums[albumKey];
@@ -234,6 +239,7 @@ class MatchedCard extends Component {
                     });
                 }
 
+                //Viewing songs of current match
                 if (this.state.rSelected === "Songs") {
                     displayCollection = Object.keys(this.props.profile.songs).map((songKey) => {
                         let song = this.props.profile.songs[songKey];
@@ -245,6 +251,7 @@ class MatchedCard extends Component {
                     });
                 }
 
+                //Viewing artists of current match
                 if (this.state.rSelected === "Artists") {
                     displayCollection = Object.keys(this.props.profile.artists).map((artistKey) => {
                         let artist = this.props.profile.artists[artistKey];
@@ -278,9 +285,9 @@ class MatchedCard extends Component {
                     <CardSubtitle>Age: {age}</CardSubtitle>
                     <div className="card_inner_content">
                         <ButtonGroup>
-                            <Button color="primary" onClick={() => this.onRadioBtnClick("Artists")} active={this.state.rSelected === "Artists"}>Artists</Button>
-                            <Button color="primary" onClick={() => this.onRadioBtnClick("Albums")} active={this.state.rSelected === "Albums"}>Albums</Button>
-                            <Button color="primary" onClick={() => this.onRadioBtnClick("Songs")} active={this.state.rSelected === "Songs"}>Songs</Button>
+                            <Button role="button" aria-label="select artists" color="primary" onClick={() => this.onRadioBtnClick("Artists")} active={this.state.rSelected === "Artists"}>Artists</Button>
+                            <Button role="button" aria-label="select albums" color="primary" onClick={() => this.onRadioBtnClick("Albums")} active={this.state.rSelected === "Albums"}>Albums</Button>
+                            <Button role="button" aria-label="select songs" color="primary" onClick={() => this.onRadioBtnClick("Songs")} active={this.state.rSelected === "Songs"}>Songs</Button>
                         </ButtonGroup>
                         <Container className="card_container">
 
@@ -298,8 +305,9 @@ class MatchedCard extends Component {
                         </Container>
 
                         <ButtonGroup className="action_buttons">
-                            <Button color="link" onClick={() => this.props.handleSkipCallback()}><img src={skip} /></Button>
-                            <Button color="link" onClick={() => {
+                            <Button aria-label="skip button" role="button" color="link" onClick={() => this.props.handleSkipCallback()}><img src={skip} /></Button>
+                            <Button aria-label="like button" role="button" color="link" onClick={() => {
+                                //like and then go to the next card
                                 this.props.handleLikeCallback(this.props.profile.uid, this.props.profile.name);
                                 this.props.handleSkipCallback();
                             }} ><img id="like" src={like} /></Button>

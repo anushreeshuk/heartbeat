@@ -1,7 +1,7 @@
 import React, { Component } from 'react'; //import React Component
 import { FormFeedback, Alert, FormGroup, Label, Input, Button } from 'reactstrap'
 import { Redirect } from 'react-router-dom'
-import { AddSong, EditPage } from './App';
+
 // Form group a user will use to sign up on the chat application
 class SignUpForm extends Component {
     constructor(props) {
@@ -13,6 +13,7 @@ class SignUpForm extends Component {
             avatar: undefined,
             age: undefined,
             img: undefined,
+            img2: undefined,
             
         }; //initialize state
     }
@@ -154,11 +155,20 @@ class SignUpForm extends Component {
                     </FormGroup>
 
                     <FormGroup>
-                        <Label for="pic">Add your Profile Photo (url)</Label>
+                        <Label for="pic">Add your first photo! (url)</Label>
                         <Input
                             role="textbox"
                             id="img"
                             name="img" 
+                            onChange={(event) => this.handleChange(event)}/>
+                    </FormGroup>
+
+                    <FormGroup>
+                        <Label for="pic">Add your second photo! (url)</Label>
+                        <Input
+                            role="textbox"
+                            id="img2"
+                            name="img2" 
                             onChange={(event) => this.handleChange(event)}/>
                     </FormGroup>
 
