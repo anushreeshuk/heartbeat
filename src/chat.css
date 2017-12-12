@@ -1,0 +1,167 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  animation: App-logo-spin infinite 20s linear;
+  height: 80px;
+}
+
+.App-header {
+  background-color: #222;
+  height: 150px;
+  padding: 20px;
+  color: white;
+}
+
+.App-title {
+  font-size: 1.5em;
+}
+
+.App-intro {
+  font-size: large;
+}
+
+@keyframes App-logo-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.avatar{
+  width: 50%;
+  height: 50%;
+}
+
+.drawer{
+  width:50%;
+}
+
+header{
+  width:100%;
+  padding:0px !important;
+};
+
+#root > div > div{
+  width: 100%;
+  padding: 0px !important;
+  
+}
+
+.image-container{
+  width:100%;
+  display: inline-block;
+  width: 100%;
+  text-align: center
+}
+
+.image-container > img{
+  display:inline;
+  border-radius: 50%;
+
+}
+.convo-card{
+  margin: 25px;
+}
+
+button > a{
+  color:white;
+}
+
+.card-body{
+  padding: 10px;
+}
+
+.messages-list{
+  overflow: scroll;
+  height: 100%;
+  padding: 10px;
+}
+
+
+.message-card{
+  margin: 10px;
+  background-color: lightskyblue;
+  height: 20% !important;
+}
+
+.avatar-mini{
+  width:20%;
+  height:20%;
+  padding: 5px;
+  border-radius: 50%;
+}
+
+.message-time{
+  text-align: right;
+  top: 0;
+  position: absolute;
+  right: 0;
+  padding: 14px;
+  font-size: 10pt;
+  font-style: italic;
+  color: gray;
+}
+
+.message-text{
+  font-size: 15pt;
+  font-weight: bold;
+}
+
+html, body
+{
+    height: 100%;
+}
+
+.modal:before {
+  display: inline-block;
+  content: " ";
+  height: 100%;
+  vertical-align: middle;
+}
+
+.modal {
+  text-align: center;
+}
+
+.modal-dialog {
+  display: inline-block;
+  text-align: left;
+  vertical-align: middle;
+}
+
+@media(min-width: 768px){
+  .card-body{
+    width: 50%;
+  }
+  .card{
+    width: 90%;
+  }
+
+  .message-card{
+    background-color: white;
+    height: 150px !important;
+  }
+  
+  .avatar-mini{
+    width: 10%;
+  }
+
+  .message-text{
+    font-weight: initial;
+  }
+  
+  .avatar{
+    width:15%;
+    height:15%;
+  }
+  
+  .card-subtitle{
+    font-weight: initial;
+    margin-bottom: 10px;
+    margin-top: 10px;
+  }
+  #logo{
+    width: 60px;
+    margin-left: 30px;
+  }
+}
