@@ -3,16 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-<<<<<<< HEAD
-    "bootstrap": "^4.0.0-alpha.6",
-=======
     "bootstrap": "^4.0.0-beta.2",
     "firebase": "^4.7.0",
     "lodash": "^4.17.4",
     "material-ui": "^0.19.4",
     "md5": "^2.2.1",
     "moment": "^2.19.2",
->>>>>>> 63184866e709c4314ea7e8c9c5527c886d85fa93
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "react-firebase": "^2.2.7",

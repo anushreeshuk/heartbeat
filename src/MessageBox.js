@@ -28,9 +28,11 @@ export class MessageBox extends Component {
       userPhoto: this.props.currentUser.photoURL,
       time: firebase.database.ServerValue.TIMESTAMP
     };
+
     let messages = firebase.database().ref('messages/' + this.props.name);
     messages.push(newMessage);
     let id;
+    
     if (!_.find(this.props.conversations, { 'name': this.props.name, 'userId1': this.props.currentUser.uid })) {
       id = firebase.database().ref('conversations').push({
         name: this.props.name,
@@ -45,6 +47,7 @@ export class MessageBox extends Component {
       });
       firebase.database().ref('messages/' + convo.username2 + '+' + convo.username1).push(newMessage);
       let id1;
+      
       if (_.find(this.props.conversations, { 'name': convo.username2 + '+' + convo.username1, 'userId2': this.props.currentUser.uid })) {
         id1 = _.find(this.props.conversations, {
           'name': convo.username2 + '+' + convo.username1,
@@ -58,6 +61,7 @@ export class MessageBox extends Component {
           userId2: this.props.currentUser.uid, messages: 0
         }).key;
       }
+      
       firebase.database().ref('conversations').once('value').then(function (snapshot) {
         let y = snapshot.val()[id].messages;
         let x = firebase.database().ref('conversations/' + id1);
@@ -65,6 +69,7 @@ export class MessageBox extends Component {
       });;
       id = convo.id;
     }
+    
     firebase.database().ref('conversations').once('value').then(function (snapshot) {
       let y = snapshot.val()[id].messages;
       let x = firebase.database().ref('conversations/' + id);
@@ -98,8 +103,7 @@ export class MessageBox extends Component {
                 {/* Disable if invalid post length */}
                 <button className="btn btn-primary"
                   disabled={this.state.post.length === 0 || this.state.post.length > 300}
-                  onClick={(e) => this.postMessage(e)}
-                >
+                  onClick={(e) => this.postMessage(e)} >
                   <i className="fa fa-pencil-square-o" aria-hidden="true"></i> Send
                 </button>
               </div>

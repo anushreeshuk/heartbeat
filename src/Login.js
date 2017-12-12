@@ -21,7 +21,6 @@ class Login extends Component {
 
     render() {
         let content = null; //content to render
-
         if (!this.props.user) { //if logged out, show signup form
             content = (
                 <div className="container">
@@ -33,6 +32,7 @@ class Login extends Component {
                 </div>
             );
         }
+
         else { //if logged in, show welcome message
             content = (
                 <div>
@@ -40,12 +40,14 @@ class Login extends Component {
                 </div>
             );
         }
+
         let display;
         if (this.props.loading) {
             display = <div className="text-center">
                 <i className="fa fa-spinner fa-spin fa-3x" aria-label="Connecting..."aria-label="spinner" aria-required="true"></i>
             </div>;
         }
+        
         return (
             <div>
                 {display}
