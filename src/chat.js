@@ -56,7 +56,7 @@ export class ConversationsList extends Component {
             //iterate through the conversations prop and create a conversation card for each
             conversationsList = this.props.conversations.map((convo) => {
                 //added afterwards
-                console.log(convo)
+                //console.log(convo)
                 if (convo.userId1 == this.props.user.uid) {
                     return <ConversationCard
                         key={convo.name}
@@ -255,24 +255,6 @@ export class SendMessageForm extends Component {
 }
 
 export class NavDrawer extends Component {
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            modal: false,
-            newConvoValue: ''
-        };
-
-        this.toggleModal = this.toggleModal.bind(this);
-    }
-
-    // Used to toggle the popup modal that prompts for a new conversation
-    toggleModal() {
-        this.setState({
-            modal: !this.state.modal,
-            backdrop: true
-        });
-    }
 
     // Callback for when user is inputting a name of a new conversation
     handleChange(event) {
@@ -295,60 +277,35 @@ export class NavDrawer extends Component {
                         { //Content shown when logged in
                             this.props.user &&
                             <div>
-                                <div>
+                                <div className="drawer-buttons">
                                     {this.props.conversationList}
                                     <Link to='/edit'>
                                         <Button
                                             role="button"
                                             color="info"
-                                            id="newConvoPopover"
+                                            
                                             onClick={() => this.props.toggleCallback()}
                                         >
                                             Edit Profile
                                      </Button>
                                     </Link>
 
-                                    <Modal
-                                        aria-label="new conversation modal"
-                                        isOpen={this.state.modal}
-                                        toggle={this.toggle} className="modal-popover">
-                                        <ModalHeader aria-label="make new conversation">New Conversation</ModalHeader>
-                                        <ModalBody>
-                                            <AddConvo
-                                                user={this.props.user}
-                                                conversations={this.props.conversations} />
-                                        </ModalBody>
-                                        <ModalFooter>
-                                            <Link to={"/conversations/" + this.state.newConvoValue}>
-                                                <Button role="button" color="primary" onClick={() => this.toggleModal()}>
-                                                    Create
-                        </Button>
-                                            </Link>
-
-                                            <Button role="button" color="secondary" onClick={() => this.toggleModal()}>
-                                                Cancel
-                        </Button>
-                                        </ModalFooter>
-                                    </Modal>
-                                </div>
-
-                                <div>
                                     <Link to="/">
                                         <Button
                                             role="button"
                                             color="info"
                                             onClick={() => this.props.toggleCallback()}>
                                             Home
-                    </Button>
+                                        </Button>
                                     </Link>
 
-                                    <Link to="/">
+                                    <Link to="/login">
                                         <Button
                                             role="button"
                                             color="warning"
                                             onClick={() => this.props.signOutCallback()}>
                                             Log Out
-                    </Button>
+                                        </Button>
                                     </Link>
                                 </div>
                             </div>

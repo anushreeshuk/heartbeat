@@ -299,4 +299,18 @@ button > img{
     margin-bottom: 10px;
   }
 
+  .drawer-buttons > a > button{
+    margin: 20px;
+  }
+
+  .card-body > h4{
+    font-size: 20pt;
+    word-wrap: break-word;
+    width: 200px;
+  }
+  
+  .convo-card.card{
+    margin: 10px;
+  }
+  
 }

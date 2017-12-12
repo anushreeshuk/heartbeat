@@ -12,6 +12,7 @@ class SignUpForm extends Component {
             handle: undefined,
             avatar: undefined,
             age: undefined,
+            img: undefined,
             
         }; //initialize state
     }
@@ -20,7 +21,7 @@ class SignUpForm extends Component {
     handleSignUp(event) {
         event.preventDefault(); //don't submit
         let avatar = this.state.avatar;//assign default if undefined
-        this.props.signUpCallback(this.state.email, this.state.password, this.state.handle, avatar, this.state.age);
+        this.props.signUpCallback(this.state.email, this.state.password, this.state.handle, avatar, this.state.age, this.state.img);
     }
 
     // Used to handle input change in our form
@@ -156,8 +157,8 @@ class SignUpForm extends Component {
                         <Label for="pic">Add your Profile Photo (url)</Label>
                         <Input
                             role="textbox"
-                            id="pic"
-                            name="pic" 
+                            id="img"
+                            name="img" 
                             onChange={(event) => this.handleChange(event)}/>
                     </FormGroup>
 
@@ -175,7 +176,7 @@ class SignUpForm extends Component {
                 </form>
             )
         }
-        // Redirect to the root if user is logged in
+        // Redirect to the edit page if user is logged in
         else {
             return <Redirect to='/edit' />
         }
