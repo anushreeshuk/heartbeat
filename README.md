@@ -22,4 +22,6 @@ This app is for anyone and everyone that enjoys music and wants to find people b
 - [CSS](https://developer.mozilla.org/en-US/docs/Web/CSS)
 - [Node JS - NPM](https://www.npmjs.com)
 
+
 ## So come join as as we jive to the beat of your hearts!
+
