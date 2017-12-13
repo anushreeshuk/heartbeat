@@ -56,6 +56,7 @@ export class PhotoCarousel extends Component {
       let slides = this.props.items.map((item) => {
         return (
           <CarouselItem
+            key={item}
             onExiting={this.onExiting}
             onExited={this.onExited}
             key={item.src}

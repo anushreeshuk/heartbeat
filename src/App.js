@@ -59,9 +59,10 @@ class App extends Component {
 
     this.authUnRegFunc = firebase.auth().onAuthStateChanged((firebaseUser) => {
       if (firebaseUser) { //someone logged in
-        this.setState({ user: firebaseUser, loading: false, login: true });
+        this.setState({ user: firebaseUser, loading: false, login: true, errorMessage: null});
+        this.profileRef = firebase.database().ref("users/" + this.state.user.uid);
         this.profileRef.on("value", (snapshot) => {
-          
+          console.log(snapshot.val());
           this.setState({ userProfile: snapshot.val() });
         });
       }
@@ -71,14 +72,14 @@ class App extends Component {
 
     });
 
-   
+
     this.usersRef = firebase.database().ref("users");
     this.usersRef.on("value", (snapshot) => {
       if (this.state.user) {
-        
+
         this.profileRef = firebase.database().ref("users/" + this.state.user.uid);
         this.profileRef.on("value", (snapshot) => {
-          
+
           this.setState({ userProfile: snapshot.val() });
         });
 
@@ -113,7 +114,7 @@ class App extends Component {
   }
 
   handleLike(uid, name) {
-  
+
     if (Object.keys(this.state.userLikes).includes(uid)) {
       //case where B exists in userLikes
 
@@ -127,7 +128,7 @@ class App extends Component {
 
           Object.keys(this.state.userLikes[this.state.user.uid]).map((key) => {
             if (this.state.userLikes[this.state.user.uid][key]["likedBack"]) {
-              
+
               let newConvo = {
                 'name': this.state.user.displayName + '+' + this.state.users[key]["name"],
                 'userId1': this.state.user.uid,
@@ -156,11 +157,11 @@ class App extends Component {
 
   // A callback function for registering new users in the chat
   handleSignUp(email, password, handle, avatar, userAge, userImg, userImg2) {
-  
-    this.setState({ errorMessage: null, profileInput: { name: handle, age: parseInt(userAge), img: userImg, img2: userImg2} }); //clear any old errors
+
+    this.setState({ errorMessage: null, profileInput: { name: handle, age: parseInt(userAge), img: userImg, img2: userImg2 } }); //clear any old errors
     let gravatarImg = "https://www.gravatar.com/avatar/" + md5(email);
 
-  
+
     firebase.auth()
       .createUserWithEmailAndPassword(email, password)
       .then((firebaseUser) => {
@@ -181,13 +182,14 @@ class App extends Component {
 
     /* TODO: sign in user here */
     firebase.auth().signInWithEmailAndPassword(email, password)
+      .then(() => {
+        this.profileRef.on("value", (snapshot) => {
+          this.setState({ userProfile: snapshot.val() });
+        });
+      })
       .catch((err) => {
         this.setState({ errorMessage: err.message })
       });
-
-    this.profileRef.on("value", (snapshot) => {
-      this.setState({ userProfile: snapshot.val() });
-    });
 
   }
 
@@ -485,7 +487,7 @@ class FilterDrawer extends Component {
         let userSentLikes = this.props.userLikes[this.props.user.uid];
 
         if (!userSentLikes[innerKey].likedBack) {
-          return <Card className="mb-2">
+          return <Card key={innerKey} className="mb-2">
             <CardSubtitle> {this.props.users[innerKey].name} </CardSubtitle>
           </Card>;
         }
@@ -534,7 +536,7 @@ class FilterDrawer extends Component {
                     </Col>
                     <Col className="m-0 p-0"> <p className="secondary_text">to</p> </Col>
                     <Col className="pl-0">
-                      <Input role="input" aria-label="maximum age"  type="number" id="maxAge" placeholder="100" onChange={(event) => this.props.handleAgeChangeCallback("max_change", event.target.value)} />
+                      <Input role="input" aria-label="maximum age" type="number" id="maxAge" placeholder="100" onChange={(event) => this.props.handleAgeChangeCallback("max_change", event.target.value)} />
                     </Col>
                   </Row>
 
